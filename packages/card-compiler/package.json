@@ -1,0 +1,37 @@
+{
+  "name": "@thejokersthief/riftbound-card-compiler",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "oxlint ./src",
+    "format": "biome format --check ./src",
+    "test": "vitest run",
+    "compile": "tsx scripts/compile-catalog.ts",
+    "verify-catalog": "tsx scripts/verify-catalog.ts"
+  },
+  "dependencies": {
+    "@thejokersthief/riftbound-card-catalog": "workspace:*",
+    "@thejokersthief/riftbound-effect-ir": "workspace:*",
+    "@thejokersthief/riftbound-protocol": "workspace:*",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "*",
+    "@types/node": "^25.9.2",
+    "oxlint": "*",
+    "tsx": "*",
+    "typescript": "*",
+    "vitest": "*"
+  }
+}
