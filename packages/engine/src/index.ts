@@ -160,7 +160,6 @@ export function createGame(config: {
   const firstPlayerResult = nextInt(rng, 2)
   rng = firstPlayerResult.next
   const firstPlayerId = config.players[firstPlayerResult.value]!
-  const secondPlayerId = firstPlayerId === p1 ? p2 : p1
 
   // Draw opening hands (5 cards)
   const p1Hand = p1ShuffledDeck.slice(0, 5)
