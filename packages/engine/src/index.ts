@@ -40,6 +40,10 @@ export {
   viewForMatch,
   type GameEngineFunctions,
 } from './match/index.js'
+export { createRulesQuery } from './rules-query/index.js'
+export { runStartPhase, runChannelPhase, startMainPhase } from './turn/index.js'
+export { fold } from './state/fold.js'
+export { resolveCombat } from './combat/index.js'
 
 // ---------------------------------------------------------------------------
 // createGame
