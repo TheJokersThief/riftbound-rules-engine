@@ -1,0 +1,23 @@
+{
+  "name": "riftbound-rules-engine-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "pnpm nx run-many --target=typecheck --all",
+    "lint": "pnpm nx run-many --target=lint --all",
+    "format": "pnpm nx run-many --target=format --all",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@nx/js": "^20.0.0",
+    "@vitest/coverage-v8": "^3.0.0",
+    "@biomejs/biome": "^1.9.0",
+    "nx": "^20.0.0",
+    "oxlint": "^0.15.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
