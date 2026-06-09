@@ -120,19 +120,6 @@ describe('createCardCatalog with inline fixture', () => {
     keywords: [],
   }
 
-  const invalidCard: unknown = {
-    id: 'bad001',
-    name: 'Bad Unit',
-    cardType: 'Unit',
-    set: 'test',
-    rarity: null,
-    abilityText: '',
-    might: -5,
-    playCost: { energy: 1, power: 0, runes: [] },
-    deckZone: 'Main',
-    keywords: [],
-  }
-
   it('skips invalid entries and logs warnings', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
