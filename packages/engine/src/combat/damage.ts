@@ -11,7 +11,6 @@ import { fold } from '../state/fold.js'
 export function applyDamageAssignments(
   state: GameState,
   assignments: DamageAssignment[],
-  query: RulesQuery,
 ): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
 
@@ -63,7 +62,6 @@ export function computeDamagePool(
 export function buildDefaultAssignments(
   attackers: CardId[],
   defenders: CardId[],
-  state: GameState,
   query: RulesQuery,
 ): DamageAssignment[] {
   if (attackers.length === 0 || defenders.length === 0) return []

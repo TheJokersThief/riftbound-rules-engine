@@ -228,7 +228,7 @@ describe('buildDefaultAssignments', () => {
   it('assigns attacker to defender in order', () => {
     const state = makeState()
     const query = createRulesQuery(state, mockCatalog)
-    const assignments = buildDefaultAssignments([card1], [card2], state, query)
+    const assignments = buildDefaultAssignments([card1], [card2], query)
     expect(assignments).toHaveLength(1)
     expect(assignments[0]).toMatchObject({
       attackerId: card1,
@@ -242,7 +242,7 @@ describe('buildDefaultAssignments', () => {
     const state = makeState()
     const query = createRulesQuery(state, mockCatalog)
     // Two attackers: card1 and card4; defenders: card2 (non-tank), card3 (tank)
-    const assignments = buildDefaultAssignments([card1, card4], [card2, card3], state, query)
+    const assignments = buildDefaultAssignments([card1, card4], [card2, card3], query)
     // Tank (card3) should be targeted before non-tank (card2)
     expect(assignments).toHaveLength(2)
     expect(assignments[0]?.targetId).toBe(card3) // tank first
@@ -252,14 +252,14 @@ describe('buildDefaultAssignments', () => {
   it('returns empty array when there are no defenders', () => {
     const state = makeState()
     const query = createRulesQuery(state, mockCatalog)
-    const assignments = buildDefaultAssignments([card1], [], state, query)
+    const assignments = buildDefaultAssignments([card1], [], query)
     expect(assignments).toHaveLength(0)
   })
 
   it('returns empty array when there are no attackers', () => {
     const state = makeState()
     const query = createRulesQuery(state, mockCatalog)
-    const assignments = buildDefaultAssignments([], [card2], state, query)
+    const assignments = buildDefaultAssignments([], [card2], query)
     expect(assignments).toHaveLength(0)
   })
 })
@@ -271,11 +271,10 @@ describe('buildDefaultAssignments', () => {
 describe('applyDamageAssignments', () => {
   it('emits DamageDealt events for each assignment', () => {
     const state = makeState()
-    const query = createRulesQuery(state, mockCatalog)
     const assignments = [
       { attackerId: card1, targetId: card2, amount: 3 },
     ]
-    const result = applyDamageAssignments(state, assignments, query)
+    const result = applyDamageAssignments(state, assignments)
     expect(result.events).toHaveLength(1)
     expect(result.events[0]).toMatchObject({
       type: 'DamageDealt',
@@ -288,11 +287,10 @@ describe('applyDamageAssignments', () => {
 
   it('folds each event into state and returns updated state', () => {
     const state = makeState()
-    const query = createRulesQuery(state, mockCatalog)
     const assignments = [
       { attackerId: card1, targetId: card2, amount: 3 },
     ]
-    const result = applyDamageAssignments(state, assignments, query)
+    const result = applyDamageAssignments(state, assignments)
     // DamageDealt is a no-op fold, so state should be same reference shape but stable
     expect(result.state).toBeDefined()
     expect(result.state.gameId).toBe('game1')
@@ -300,12 +298,11 @@ describe('applyDamageAssignments', () => {
 
   it('emits multiple events for multiple assignments', () => {
     const state = makeState()
-    const query = createRulesQuery(state, mockCatalog)
     const assignments = [
       { attackerId: card1, targetId: card2, amount: 3 },
       { attackerId: card4, targetId: card3, amount: 2 },
     ]
-    const result = applyDamageAssignments(state, assignments, query)
+    const result = applyDamageAssignments(state, assignments)
     expect(result.events).toHaveLength(2)
     expect(result.events[0]?.type).toBe('DamageDealt')
     expect(result.events[1]?.type).toBe('DamageDealt')

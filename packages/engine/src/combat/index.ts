@@ -6,7 +6,6 @@ import type { RulesQuery } from '../rules-query/index.js'
 import {
   buildDefaultAssignments,
   applyDamageAssignments,
-  computeDamagePool,
 } from './damage.js'
 import { resolveDeaths, resolveControl } from './resolution.js'
 
@@ -46,10 +45,10 @@ export function resolveCombat(
   }
 
   // Build default damage assignments
-  const assignments = buildDefaultAssignments(attackers, defenders, state, query)
+  const assignments = buildDefaultAssignments(attackers, defenders, query)
 
   // Apply damage assignments
-  const damageResult = applyDamageAssignments(state, assignments, query)
+  const damageResult = applyDamageAssignments(state, assignments)
   state = damageResult.state
   allEvents.push(...damageResult.events)
 
