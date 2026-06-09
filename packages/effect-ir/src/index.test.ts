@@ -4,6 +4,9 @@ import {
   EffectNodeSchema,
   AbilityNodeSchema,
 } from './program.js'
+import { CostNodeSchema } from './costs.js'
+import { ConditionNodeSchema } from './conditions.js'
+import { NumberExprSchema } from './selectors.js'
 
 // Helper: a minimal SelectorNode for tests
 const anySelector = {
@@ -15,15 +18,6 @@ const anySelector = {
   chooser: 'None' as const,
 }
 
-// Helper: a minimal SelectorNode targeting a player
-const selfPlayerSelector = {
-  scope: 'Friendly' as const,
-  objectType: 'Player' as const,
-  location: { type: 'Here' as const },
-  filters: [],
-  quantity: { type: 'One' as const },
-  chooser: 'None' as const,
-}
 
 describe('EffectProgramSchema', () => {
   it('parses Unparsed program', () => {
@@ -178,5 +172,43 @@ describe('EffectNodeSchema', () => {
   it('rejects invalid effect type', () => {
     const result = EffectNodeSchema.safeParse({ type: 'NotAnEffect' })
     expect(result.success).toBe(false)
+  })
+})
+
+describe('CostNodeSchema', () => {
+  it('rejects Energy cost with amount 0 (must be positive)', () => {
+    const result = CostNodeSchema.safeParse({ type: 'Energy', amount: 0 })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe('ConditionNodeSchema', () => {
+  it('parses a nested And containing two IsMyTurn conditions', () => {
+    const condition = {
+      type: 'And',
+      conditions: [
+        { type: 'IsMyTurn' },
+        { type: 'IsMyTurn' },
+      ],
+    }
+    const result = ConditionNodeSchema.safeParse(condition)
+    if (!result.success) {
+      console.error(JSON.stringify(result.error.issues, null, 2))
+    }
+    expect(result.success).toBe(true)
+  })
+})
+
+describe('NumberExprSchema', () => {
+  it('parses a CountOf expression with a valid selector', () => {
+    const expr = {
+      type: 'CountOf',
+      selector: anySelector,
+    }
+    const result = NumberExprSchema.safeParse(expr)
+    if (!result.success) {
+      console.error(JSON.stringify(result.error.issues, null, 2))
+    }
+    expect(result.success).toBe(true)
   })
 })

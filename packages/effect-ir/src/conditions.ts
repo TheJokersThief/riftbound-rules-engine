@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { PhaseSchema, PlayerRefSchema } from './primitives.js'
-import { FilterNodeSchema, SelectorNodeSchema, SelectorNode } from './selectors.js'
+import { SelectorNodeSchema, SelectorNode } from './selectors.js'
 
 export type ConditionNode =
   | { type: 'And'; conditions: ConditionNode[] }
@@ -13,9 +13,6 @@ export type ConditionNode =
   | { type: 'PlayerHasPoints'; player: z.infer<typeof PlayerRefSchema>; atLeast: number }
   | { type: 'IsPhase'; phase: z.infer<typeof PhaseSchema> }
   | { type: 'IsMyTurn' }
-
-// Use ZodType<ConditionNode | undefined> for the optional variant used in parent schemas
-export type OptionalConditionNode = ConditionNode | undefined
 
 export const ConditionNodeSchema: z.ZodType<ConditionNode> = z.lazy(() =>
   z.discriminatedUnion('type', [
@@ -31,6 +28,3 @@ export const ConditionNodeSchema: z.ZodType<ConditionNode> = z.lazy(() =>
     z.object({ type: z.literal('IsMyTurn') }),
   ])
 )
-
-// Suppress unused import warning — FilterNodeSchema is used for type completeness
-void FilterNodeSchema
