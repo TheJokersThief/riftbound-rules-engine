@@ -78,7 +78,7 @@ function makeValidDeck(): DeckConfig {
     runeDeck: Array.from({ length: 10 }, () => def2),
     legendId: def1,
     championId: def1,
-    battlefieldIds: [def1, def1, def1],
+    battlefields: [def1, def1, def1],
   }
 }
 
@@ -195,11 +195,11 @@ describe('createGame()', () => {
     )
   })
 
-  it('throws when battlefieldIds length is not 3', () => {
-    const badDeck: DeckConfig = { ...makeValidDeck(), battlefieldIds: [def1, def1] }
+  it('throws when battlefields length is not 3', () => {
+    const badDeck = { ...makeValidDeck(), battlefields: [def1, def1] as unknown as [CardDefId, CardDefId, CardDefId] }
     const decks = { [p1]: badDeck, [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
     expect(() => createGame({ players: [p1, p2], decks, seed: 1, matchId: 'match1' as MatchId })).toThrow(
-      /battlefieldIds must have exactly 3/,
+      /battlefields must have exactly 3/,
     )
   })
 
@@ -350,12 +350,15 @@ describe('legalActions()', () => {
     expect(choices).toContain(false)
   })
 
-  it('returns PassPriority when pendingDecision is PriorityWindow', () => {
+  it('includes PassPriority and playable cards when pendingDecision is PriorityWindow', () => {
     const state = makeState({
       pendingDecision: { type: 'PriorityWindow', playerId: p1 },
     })
     const actions = legalActions(state, p1, mockCatalog)
-    expect(actions).toEqual([{ type: 'PassPriority', playerId: p1 }])
+    // PassPriority is always available
+    expect(actions.some(a => a.type === 'PassPriority')).toBe(true)
+    // p1 has a Unit (def1, cost energy:2/power:1) in hand with sufficient resources during Main phase
+    expect(actions.some(a => a.type === 'PlayCard')).toBe(true)
   })
 })
 

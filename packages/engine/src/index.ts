@@ -71,9 +71,9 @@ export function createGame(config: {
         `Player ${playerId} runeDeck must have exactly 10 cards, got ${deck.runeDeck.length}`,
       )
     }
-    if (deck.battlefieldIds.length !== 3) {
+    if (deck.battlefields.length !== 3) {
       throw new Error(
-        `Player ${playerId} battlefieldIds must have exactly 3, got ${deck.battlefieldIds.length}`,
+        `Player ${playerId} battlefields must have exactly 3, got ${deck.battlefields.length}`,
       )
     }
   }
@@ -135,7 +135,7 @@ export function createGame(config: {
     allCards[championCard.id] = championCard
 
     // Battlefield cards (all 3 created as instances)
-    for (const bfDefId of deck.battlefieldIds) {
+    for (const bfDefId of deck.battlefields) {
       const bfCard = makeCard(bfDefId, playerId)
       allCards[bfCard.id] = bfCard
     }
@@ -175,8 +175,8 @@ export function createGame(config: {
   const p1BfId = `bf-${p1}` as BattlefieldId
   const p2BfId = `bf-${p2}` as BattlefieldId
 
-  const p1BfDefId = config.decks[p1]!.battlefieldIds[0]!
-  const p2BfDefId = config.decks[p2]!.battlefieldIds[0]!
+  const p1BfDefId = config.decks[p1]!.battlefields[0]!
+  const p2BfDefId = config.decks[p2]!.battlefields[0]!
 
   const p1BfCard = makeCard(p1BfDefId, p1)
   allCards[p1BfCard.id] = p1BfCard
@@ -342,6 +342,26 @@ export function submit(
 }
 
 // ---------------------------------------------------------------------------
+// legalActions helpers
+// ---------------------------------------------------------------------------
+
+function getPlayableCards(
+  state: GameState,
+  playerId: PlayerId,
+  query: ReturnType<typeof createRulesQuery>,
+): Action[] {
+  const player = state.players[playerId]
+  if (!player) return []
+  const actions: Action[] = []
+  for (const cardId of player.hand) {
+    if (query.canBePlayed(cardId, playerId)) {
+      actions.push({ type: 'PlayCard', playerId, cardId, targets: undefined })
+    }
+  }
+  return actions
+}
+
+// ---------------------------------------------------------------------------
 // legalActions
 // ---------------------------------------------------------------------------
 
@@ -356,10 +376,14 @@ export function legalActions(
 
     const decision = state.pendingDecision
     switch (decision.type) {
-      case 'PriorityWindow':
-        return [{ type: 'PassPriority', playerId }]
+      case 'PriorityWindow': {
+        const query = createRulesQuery(state, catalog)
+        return [{ type: 'PassPriority', playerId }, ...getPlayableCards(state, playerId, query)]
+      }
 
       case 'FocusWindow':
+        // During showdown, only PassFocus is legal in v1.
+        // ActivateAbility (Reaction type) would be added here once the compiler parses abilities.
         return [{ type: 'PassFocus', playerId }]
 
       case 'ChooseYesNo':
@@ -425,11 +449,7 @@ export function legalActions(
   if (!player) return []
 
   // PlayCard
-  for (const cardId of player.hand) {
-    if (query.canBePlayed(cardId, playerId)) {
-      actions.push({ type: 'PlayCard', playerId, cardId, targets: undefined })
-    }
-  }
+  actions.push(...getPlayableCards(state, playerId, query))
 
   // EndTurn — available during main phase when chain is closed
   if (state.phase === 'Main' && !state.chain.isOpen) {

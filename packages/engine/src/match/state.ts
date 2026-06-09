@@ -6,7 +6,7 @@ export type DeckConfig = {
   runeDeck: CardDefId[]
   legendId: CardDefId
   championId: CardDefId
-  battlefieldIds: CardDefId[]
+  battlefields: [CardDefId, CardDefId, CardDefId]
 }
 
 export type MatchState = {

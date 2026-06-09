@@ -85,7 +85,7 @@ function buildMainDeck(): CardDefId[] {
 const ARIA_DECK: DeckConfig = {
   legendId:       'leg001' as CardDefId,
   championId:     'chm001' as CardDefId,
-  battlefieldIds: ['btf001', 'btf002', 'btf003'] as [CardDefId, CardDefId, CardDefId],
+  battlefields: ['btf001', 'btf002', 'btf003'] as [CardDefId, CardDefId, CardDefId],
   mainDeck:       buildMainDeck(),
   runeDeck:       RUNE_IDS,
 }
@@ -93,7 +93,7 @@ const ARIA_DECK: DeckConfig = {
 const BOWEN_DECK: DeckConfig = {
   legendId:       'leg002' as CardDefId,
   championId:     'chm002' as CardDefId,
-  battlefieldIds: ['btf004', 'btf005', 'btf006'] as [CardDefId, CardDefId, CardDefId],
+  battlefields: ['btf004', 'btf005', 'btf006'] as [CardDefId, CardDefId, CardDefId],
   mainDeck:       buildMainDeck(),
   runeDeck:       RUNE_IDS,
 }

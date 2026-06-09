@@ -56,7 +56,7 @@ export function buildDeck(overrides?: Partial<DeckConfig>): DeckConfig {
     runeDeck: RUNE_IDS,
     legendId: LEGEND_ID,
     championId: CHAMPION_ID,
-    battlefieldIds: BATTLEFIELD_IDS,
+    battlefields: BATTLEFIELD_IDS,
   }
   if (!overrides) return base
   return { ...base, ...overrides }

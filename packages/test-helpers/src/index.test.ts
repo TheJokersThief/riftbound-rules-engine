@@ -6,6 +6,6 @@ describe('test-helpers', () => {
     const deck = buildDeck()
     expect(deck.mainDeck.length).toBeGreaterThanOrEqual(40)
     expect(deck.runeDeck.length).toBe(10)
-    expect(deck.battlefieldIds.length).toBe(3)
+    expect(deck.battlefields.length).toBe(3)
   })
 })

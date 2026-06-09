@@ -114,7 +114,7 @@ function makeDeckConfig(): DeckConfig {
     runeDeck: [],
     legendId: def1,
     championId: def1,
-    battlefieldIds: [def1],
+    battlefields: [def1, def1, def1],
   }
 }
 
