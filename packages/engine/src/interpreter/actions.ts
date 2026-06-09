@@ -1,4 +1,4 @@
-import type { CardId, ZoneId, PlayerId } from '@thejokersthief/riftbound-protocol'
+import type { CardId, ZoneId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { ActionNode } from '@thejokersthief/riftbound-effect-ir'
 import type { GameEvent } from '@thejokersthief/riftbound-protocol'
