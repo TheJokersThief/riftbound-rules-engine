@@ -21,7 +21,6 @@ import { collectTriggers, drainHot, openShowdown, closeShowdown, advance } from 
 const p1 = 'player1' as PlayerId
 const p2 = 'player2' as PlayerId
 const card1 = 'card001' as CardId
-const card2 = 'card002' as CardId
 const bf1 = 'bf001' as BattlefieldId
 const def1 = 'def001' as CardDefId
 const def2 = 'def002' as CardDefId
