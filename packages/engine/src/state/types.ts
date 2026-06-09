@@ -8,6 +8,7 @@ import {
   MatchIdSchema,
 } from '@thejokersthief/riftbound-protocol'
 import { PhaseSchema, DecisionRequestSchema } from '@thejokersthief/riftbound-protocol'
+import { TriggerEventSchema } from '@thejokersthief/riftbound-effect-ir'
 import { StackFrameSchema } from './stack.js'
 
 // RuneSlot
@@ -82,11 +83,15 @@ export const ChainStateSchema = z.object({
 })
 export type ChainState = z.infer<typeof ChainStateSchema>
 
-// TriggeredAbilityTask — stub for sub-spec #9
+// TriggeredAbilityTask
 export const TriggeredAbilityTaskSchema = z.object({
   sourceId: CardIdSchema,
   abilityIndex: z.number().int().nonnegative(),
   controller: PlayerIdSchema,
+  context: z.object({
+    triggerEvent: TriggerEventSchema,
+    targets: z.array(CardIdSchema).optional(),
+  }),
 })
 export type TriggeredAbilityTask = z.infer<typeof TriggeredAbilityTaskSchema>
 
