@@ -38,7 +38,9 @@ export const GameEventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('CardReadied'), cardId: CardIdSchema }),
   z.object({ type: z.literal('CardExhausted'), cardId: CardIdSchema }),
   z.object({ type: z.literal('CardKilled'), cardId: CardIdSchema }),
+  // CardBuffed: net might delta from Buff/GiveMight effect IR actions (stored on CardInstance.buffAmount)
   z.object({ type: z.literal('CardBuffed'), cardId: CardIdSchema, amount: z.number().int() }),
+  // MightGiven: temporary might bonus given to a card (expires end of turn)
   z.object({ type: z.literal('MightGiven'), cardId: CardIdSchema, amount: z.number().int() }),
   z.object({ type: z.literal('KeywordGranted'), cardId: CardIdSchema, keyword: z.string() }),
   // Combat
@@ -47,6 +49,7 @@ export const GameEventSchema = z.discriminatedUnion('type', [
   // Scoring
   z.object({ type: z.literal('PointScored'), playerId: PlayerIdSchema, method: z.enum(['Conquer', 'Hold', 'Effect']), battlefieldId: BattlefieldIdSchema.nullable() }),
   // Resources
+  // energy and power are signed deltas (may be negative when spending)
   z.object({ type: z.literal('ResourceAdded'), playerId: PlayerIdSchema, energy: z.number().int(), power: z.number().int() }),
   z.object({ type: z.literal('RuneChanneled'), playerId: PlayerIdSchema, cardId: CardIdSchema }),
   z.object({ type: z.literal('XPGained'), cardId: CardIdSchema, amount: z.number().int().positive() }),
