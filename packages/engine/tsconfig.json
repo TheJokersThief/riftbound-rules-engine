@@ -7,7 +7,8 @@
   "references": [
     { "path": "../protocol" },
     { "path": "../effect-ir" },
-    { "path": "../card-catalog" }
+    { "path": "../card-catalog" },
+    { "path": "../test-helpers" }
   ],
   "include": ["src"]
 }
