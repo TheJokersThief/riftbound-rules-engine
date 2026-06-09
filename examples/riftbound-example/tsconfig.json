@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "noEmit": true
+  },
+  "references": [
+    { "path": "../../packages/protocol" },
+    { "path": "../../packages/card-catalog" },
+    { "path": "../../packages/engine" }
+  ],
+  "include": ["src"]
+}
