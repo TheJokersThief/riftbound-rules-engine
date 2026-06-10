@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
-import { CardDefinitionSchema } from './types.js'
-import type { CardDefinition } from './types.js'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
+import type { CardDefId } from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it, vi } from 'vitest'
+import { createCardCatalog } from './catalog.js'
 import { SnapshotCardDataSource, defaultSnapshotSource } from './source.js'
 import type { CardDataSource } from './source.js'
-import { createCardCatalog } from './catalog.js'
-import type { CardDefId } from '@thejokersthief/riftbound-protocol'
-import { fileURLToPath } from 'url'
-import { join, dirname } from 'path'
+import { CardDefinitionSchema } from './types.js'
+import type { CardDefinition } from './types.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const snapshotPath = join(__dirname, '..', 'data', 'cards.json')
@@ -144,10 +144,7 @@ describe('createCardCatalog with inline fixture', () => {
     } as unknown as CardDefinition
 
     const fakeSource: CardDataSource = {
-      load: async () => [
-        CardDefinitionSchema.parse(validCard),
-        invalidAsDefinition,
-      ],
+      load: async () => [CardDefinitionSchema.parse(validCard), invalidAsDefinition],
     }
 
     const catalog = await createCardCatalog(fakeSource)
@@ -183,7 +180,7 @@ describe('createCardCatalog with inline fixture', () => {
     const catalog = await createCardCatalog(fakeSource)
     const all = catalog.all()
     expect(all.length).toBe(2)
-    const names = all.map(c => c.name).sort()
+    const names = all.map((c) => c.name).sort()
     expect(names).toEqual(['Another Valid Unit', 'Valid Unit'])
   })
 })

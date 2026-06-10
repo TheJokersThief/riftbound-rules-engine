@@ -1,29 +1,38 @@
-import { describe, it, expect } from 'vitest'
+import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
+import type { EffectNode, EffectProgram, SelectorNode } from '@thejokersthief/riftbound-effect-ir'
 import type {
-  PlayerId,
-  CardId,
   BattlefieldId,
   CardDefId,
+  CardId,
   GameId,
   MatchId,
+  PlayerId,
 } from '@thejokersthief/riftbound-protocol'
-import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
-import type { GameState } from '../state/types.js'
-import type { EffectFrame } from '../state/stack.js'
-import type { EffectProgram, EffectNode, SelectorNode } from '@thejokersthief/riftbound-effect-ir'
+import {
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+  toPlayerId,
+  toZoneId,
+} from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it } from 'vitest'
+import { advance, closeShowdown, collectTriggers, drainHot, openShowdown } from '../chain/index.js'
 import { createRulesQuery } from '../rules-query/index.js'
-import { collectTriggers, drainHot, openShowdown, closeShowdown, advance } from '../chain/index.js'
+import type { EffectFrame } from '../state/stack.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = 'player1' as PlayerId
-const p2 = 'player2' as PlayerId
-const card1 = 'card001' as CardId
-const bf1 = 'bf001' as BattlefieldId
-const def1 = 'def001' as CardDefId
-const def2 = 'def002' as CardDefId
+const p1 = toPlayerId('player1')
+const p2 = toPlayerId('player2')
+const card1 = toCardId('card001')
+const bf1 = toBattlefieldId('bf001')
+const def1 = toCardDefId('def001')
+const def2 = toCardDefId('def002')
 
 // ---------------------------------------------------------------------------
 // Card definition fixtures
@@ -89,8 +98,8 @@ const battlefieldSelector: SelectorNode = {
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
   return {
-    gameId: 'game1' as GameId,
-    matchId: 'match1' as MatchId,
+    gameId: toGameId('game1'),
+    matchId: toMatchId('match1'),
     playerIds: [p1, p2],
     cards: {
       [card1]: {
@@ -108,11 +117,11 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     players: {
       [p1]: {
         hand: [],
-        mainDeck: ['deckCard1' as CardId, 'deckCard2' as CardId],
+        mainDeck: [toCardId('deckCard1'), toCardId('deckCard2')],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg1' as CardId,
-        championZone: 'chm1' as CardId,
+        legendZone: toCardId('leg1'),
+        championZone: toCardId('chm1'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -122,8 +131,8 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg2' as CardId,
-        championZone: 'chm2' as CardId,
+        legendZone: toCardId('leg2'),
+        championZone: toCardId('chm2'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -132,7 +141,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     battlefields: {
       [bf1]: {
         id: bf1,
-        cardId: 'bfcard1' as CardId,
+        cardId: toCardId('bfcard1'),
         controllerId: null,
         units: [card1],
       },
@@ -271,7 +280,7 @@ describe('drainHot()', () => {
     const result = drainHot(state, query, mockCatalog, programs)
     expect(result.state.hotQueue).toHaveLength(0)
     // Ready action emits CardReadied for card1
-    expect(result.events.some(e => e.type === 'CardReadied')).toBe(true)
+    expect(result.events.some((e) => e.type === 'CardReadied')).toBe(true)
   })
 })
 
@@ -361,7 +370,7 @@ describe('advance()', () => {
 
     const result = advance(state, query, mockCatalog)
     // Draw 1 card from p1's deck
-    expect(result.events.some(e => e.type === 'CardDrawn')).toBe(true)
+    expect(result.events.some((e) => e.type === 'CardDrawn')).toBe(true)
     expect(result.state.resolutionStack).toHaveLength(0)
   })
 
@@ -393,6 +402,6 @@ describe('advance()', () => {
 
     const result = advance(state, query, mockCatalog, programs)
     expect(result.state.hotQueue).toHaveLength(0)
-    expect(result.events.some(e => e.type === 'CardDrawn')).toBe(true)
+    expect(result.events.some((e) => e.type === 'CardDrawn')).toBe(true)
   })
 })

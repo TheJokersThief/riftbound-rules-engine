@@ -1,10 +1,10 @@
-import type { GameEvent } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
-import type { GameState } from '../state/types.js'
+import type { GameEvent } from '@thejokersthief/riftbound-protocol'
 import type { RulesQuery } from '../rules-query/index.js'
-import { startEndingPhase, advanceTurnEnd } from './phases.js'
+import type { GameState } from '../state/types.js'
 import { runCleanup } from './cleanup.js'
+import { advanceTurnEnd, startEndingPhase } from './phases.js'
 
 // ---------------------------------------------------------------------------
 // advanceTurn — called when the active player ends their turn
@@ -14,7 +14,7 @@ export function advanceTurn(
   state: GameState,
   query: RulesQuery,
   catalog: CardCatalog,
-  programs?: ReadonlyMap<string, EffectProgram>,
+  programs?: ReadonlyMap<string, EffectProgram>
 ): { state: GameState; events: GameEvent[] } {
   const allEvents: GameEvent[] = []
 

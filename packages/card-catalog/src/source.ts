@@ -1,5 +1,5 @@
-import { readFile } from 'fs/promises'
 import type { CardDefId } from '@thejokersthief/riftbound-protocol'
+import { readFile } from 'fs/promises'
 import type { CardDefinition, CardType, DeckZone } from './types.js'
 import { CardSnapshotSchema } from './types.js'
 
@@ -64,9 +64,7 @@ function normalizeCard(raw: RiftdexCard): CardDefinition | null {
   const cardType = API_CARD_TYPE_MAP[raw.cardType.toLowerCase()]
   if (!cardType) return null
 
-  const abilityText = raw.abilityHtml
-    ? htmlToPlainText(raw.abilityHtml)
-    : (raw.abilityText ?? '')
+  const abilityText = raw.abilityHtml ? htmlToPlainText(raw.abilityHtml) : (raw.abilityText ?? '')
 
   return {
     id: raw.id as CardDefId,
@@ -77,9 +75,7 @@ function normalizeCard(raw: RiftdexCard): CardDefinition | null {
     abilityText,
     might: raw.might,
     playCost:
-      raw.energyCost !== null
-        ? { energy: raw.energyCost, power: raw.power ?? 0, runes: [] }
-        : null,
+      raw.energyCost !== null ? { energy: raw.energyCost, power: raw.power ?? 0, runes: [] } : null,
     deckZone: DECK_ZONE_MAP[cardType],
     keywords: raw.tags,
   }
@@ -129,5 +125,5 @@ export class SnapshotCardDataSource implements CardDataSource {
 }
 
 export const defaultSnapshotSource = new SnapshotCardDataSource(
-  new URL('../data/cards.json', import.meta.url).pathname,
+  new URL('../data/cards.json', import.meta.url).pathname
 )

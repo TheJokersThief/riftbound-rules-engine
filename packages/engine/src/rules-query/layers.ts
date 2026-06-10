@@ -1,5 +1,6 @@
-import type { CardId, BattlefieldId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
+import type { CardId } from '@thejokersthief/riftbound-protocol'
+import { typedObjectKeys } from '@thejokersthief/riftbound-protocol'
 import type { GameState } from '../state/types.js'
 
 /**
@@ -21,7 +22,7 @@ export function getCardsInPlay(state: GameState): CardId[] {
     }
   }
 
-  for (const bfId of Object.keys(state.battlefields) as BattlefieldId[]) {
+  for (const bfId of typedObjectKeys(state.battlefields)) {
     const bf = state.battlefields[bfId]
     if (!bf) continue
     for (const unitId of bf.units) {

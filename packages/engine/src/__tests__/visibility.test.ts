@@ -1,14 +1,23 @@
-import { describe, it, expect } from 'vitest'
+import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
 import type {
-  PlayerId,
-  CardId,
   BattlefieldId,
   CardDefId,
+  CardId,
   GameId,
   MatchId,
+  PlayerId,
+} from '@thejokersthief/riftbound-protocol'
+import {
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+  toPlayerId,
+  toZoneId,
 } from '@thejokersthief/riftbound-protocol'
 import { PlayerViewSchema } from '@thejokersthief/riftbound-protocol'
-import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
+import { describe, expect, it } from 'vitest'
 import type { GameState } from '../state/types.js'
 import { viewFor } from '../visibility/index.js'
 
@@ -16,21 +25,21 @@ import { viewFor } from '../visibility/index.js'
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = 'player1' as PlayerId
-const p2 = 'player2' as PlayerId
-const handCard1 = 'hand001' as CardId
-const handCard2 = 'hand002' as CardId
-const legCard1 = 'leg001' as CardId
-const legCard2 = 'leg002' as CardId
-const chmCard1 = 'chm001' as CardId
-const chmCard2 = 'chm002' as CardId
-const baseCard1 = 'base001' as CardId
-const baseCard2 = 'base002' as CardId
-const deckCard1 = 'deck001' as CardId
-const deckCard2 = 'deck002' as CardId
-const def1 = 'def001' as CardDefId
-const def2 = 'def002' as CardDefId
-const bf1 = 'bf001' as BattlefieldId
+const p1 = toPlayerId('player1')
+const p2 = toPlayerId('player2')
+const handCard1 = toCardId('hand001')
+const handCard2 = toCardId('hand002')
+const legCard1 = toCardId('leg001')
+const legCard2 = toCardId('leg002')
+const chmCard1 = toCardId('chm001')
+const chmCard2 = toCardId('chm002')
+const baseCard1 = toCardId('base001')
+const baseCard2 = toCardId('base002')
+const deckCard1 = toCardId('deck001')
+const deckCard2 = toCardId('deck002')
+const def1 = toCardDefId('def001')
+const def2 = toCardDefId('def002')
+const bf1 = toBattlefieldId('bf001')
 
 // ---------------------------------------------------------------------------
 // Mock catalog
@@ -83,8 +92,8 @@ const mockCatalog: CardCatalog = {
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
   return {
-    gameId: 'game1' as GameId,
-    matchId: 'match1' as MatchId,
+    gameId: toGameId('game1'),
+    matchId: toMatchId('match1'),
     playerIds: [p1, p2],
     cards: {
       [handCard1]: {
@@ -324,9 +333,9 @@ describe('viewFor()', () => {
     // handCard2 has buffAmount: 0; handCard1 has buffAmount: 5
     const state = makeState()
     const view = viewFor(state, p1, mockCatalog)
-    const card = view.self.hand.find(c => c.cardId === handCard1)!
+    const card = view.self.hand.find((c) => c.cardId === handCard1)!
     expect(card.buffAmount).toBe(5)
-    const card2 = view.self.hand.find(c => c.cardId === handCard2)!
+    const card2 = view.self.hand.find((c) => c.cardId === handCard2)!
     expect(card2.buffAmount).toBe(0)
   })
 })

@@ -1,11 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import {
-  EffectProgramSchema,
-  EffectNodeSchema,
-  AbilityNodeSchema,
-} from './program.js'
-import { CostNodeSchema } from './costs.js'
+import { describe, expect, it } from 'vitest'
 import { ConditionNodeSchema } from './conditions.js'
+import { CostNodeSchema } from './costs.js'
+import { AbilityNodeSchema, EffectNodeSchema, EffectProgramSchema } from './program.js'
 import { NumberExprSchema } from './selectors.js'
 
 // Helper: a minimal SelectorNode for tests
@@ -17,7 +13,6 @@ const anySelector = {
   quantity: { type: 'All' as const },
   chooser: 'None' as const,
 }
-
 
 describe('EffectProgramSchema', () => {
   it('parses Unparsed program', () => {
@@ -186,10 +181,7 @@ describe('ConditionNodeSchema', () => {
   it('parses a nested And containing two IsMyTurn conditions', () => {
     const condition = {
       type: 'And',
-      conditions: [
-        { type: 'IsMyTurn' },
-        { type: 'IsMyTurn' },
-      ],
+      conditions: [{ type: 'IsMyTurn' }, { type: 'IsMyTurn' }],
     }
     const result = ConditionNodeSchema.safeParse(condition)
     if (!result.success) {

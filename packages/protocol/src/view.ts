@@ -1,7 +1,13 @@
 import { z } from 'zod'
-import { CardDefIdSchema, CardIdSchema, GameIdSchema, MatchIdSchema, PlayerIdSchema } from './ids.js'
 import { DecisionRequestSchema } from './decisions.js'
 import { PhaseSchema } from './events.js'
+import {
+  CardDefIdSchema,
+  CardIdSchema,
+  GameIdSchema,
+  MatchIdSchema,
+  PlayerIdSchema,
+} from './ids.js'
 
 export const RuneSlotViewSchema = z.object({
   filled: z.boolean(),
@@ -30,25 +36,28 @@ export const CardInstanceViewSchema = z.object({
 export type CardInstanceView = z.infer<typeof CardInstanceViewSchema>
 
 const PlayerStateBaseSchema = z.object({
-  mainDeck:    z.object({ count: z.number().int().nonnegative() }),
-  runeDeck:    z.object({ count: z.number().int().nonnegative() }),
-  runePool:    z.array(RuneSlotViewSchema),
-  legend:      CardInstanceViewSchema,
-  champion:    CardInstanceViewSchema,
+  mainDeck: z.object({ count: z.number().int().nonnegative() }),
+  runeDeck: z.object({ count: z.number().int().nonnegative() }),
+  runePool: z.array(RuneSlotViewSchema),
+  legend: CardInstanceViewSchema,
+  champion: CardInstanceViewSchema,
   battlefield: CardInstanceViewSchema.nullable(),
-  base:        z.array(CardInstanceViewSchema),
-  resources:   z.object({ energy: z.number().int().nonnegative(), power: z.number().int().nonnegative() }),
-  points:      z.number().int().nonnegative(),
+  base: z.array(CardInstanceViewSchema),
+  resources: z.object({
+    energy: z.number().int().nonnegative(),
+    power: z.number().int().nonnegative(),
+  }),
+  points: z.number().int().nonnegative(),
 })
 
 export const SelfViewSchema = PlayerStateBaseSchema.extend({
   playerId: PlayerIdSchema,
-  hand:     z.array(CardInstanceViewSchema),
+  hand: z.array(CardInstanceViewSchema),
 })
 export type SelfView = z.infer<typeof SelfViewSchema>
 
 export const OpponentViewSchema = PlayerStateBaseSchema.extend({
-  playerId:  PlayerIdSchema,
+  playerId: PlayerIdSchema,
   handCount: z.number().int().nonnegative(),
 })
 export type OpponentView = z.infer<typeof OpponentViewSchema>

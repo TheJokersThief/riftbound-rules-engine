@@ -9,5 +9,6 @@
     { "path": "../card-catalog" },
     { "path": "../engine" }
   ],
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["dist"]
 }

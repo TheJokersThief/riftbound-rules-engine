@@ -1,5 +1,5 @@
-import type { CardDefId } from '@thejokersthief/riftbound-protocol'
 import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
+import type { CardDefId } from '@thejokersthief/riftbound-protocol'
 
 export interface FallbackRegistry {
   get(defId: CardDefId): EffectProgram | null

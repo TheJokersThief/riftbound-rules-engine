@@ -1,8 +1,8 @@
-import type { GameEvent, BattlefieldId, PlayerId, CardId } from '@thejokersthief/riftbound-protocol'
-import type { GameState } from '../state/types.js'
+import type { BattlefieldId, CardId, GameEvent, PlayerId } from '@thejokersthief/riftbound-protocol'
 import type { RulesQuery } from '../rules-query/index.js'
-import type { DamageAssignment } from '../state/stack.js'
 import { fold } from '../state/fold.js'
+import type { DamageAssignment } from '../state/stack.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // applyDamageAssignments
@@ -10,7 +10,7 @@ import { fold } from '../state/fold.js'
 
 export function applyDamageAssignments(
   state: GameState,
-  assignments: DamageAssignment[],
+  assignments: DamageAssignment[]
 ): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
 
@@ -37,12 +37,12 @@ export function computeDamagePool(
   battlefieldId: BattlefieldId,
   contestingPlayerId: PlayerId,
   state: GameState,
-  query: RulesQuery,
+  query: RulesQuery
 ): { attackers: CardId[]; totalDamage: number } {
   const bf = state.battlefields[battlefieldId]
   if (!bf) return { attackers: [], totalDamage: 0 }
 
-  const attackers = bf.units.filter(id => {
+  const attackers = bf.units.filter((id) => {
     const card = state.cards[id]
     return card?.ownerId === contestingPlayerId
   })
@@ -62,12 +62,12 @@ export function computeDamagePool(
 export function buildDefaultAssignments(
   attackers: CardId[],
   defenders: CardId[],
-  query: RulesQuery,
+  query: RulesQuery
 ): DamageAssignment[] {
   if (attackers.length === 0 || defenders.length === 0) return []
 
-  const tankDefenders = defenders.filter(id => query.keywordsOf(id).includes('Tank'))
-  const nonTankDefenders = defenders.filter(id => !query.keywordsOf(id).includes('Tank'))
+  const tankDefenders = defenders.filter((id) => query.keywordsOf(id).includes('Tank'))
+  const nonTankDefenders = defenders.filter((id) => !query.keywordsOf(id).includes('Tank'))
   const orderedDefenders = [...tankDefenders, ...nonTankDefenders]
 
   const assignments: DamageAssignment[] = []

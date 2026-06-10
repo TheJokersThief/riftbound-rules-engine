@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
 import { createCardCatalog, defaultSnapshotSource } from '@thejokersthief/riftbound-card-catalog'
-import { playFuzzGame, FUZZ_ITERATIONS } from '@thejokersthief/riftbound-test-helpers'
+import { FUZZ_ITERATIONS, playFuzzGame } from '@thejokersthief/riftbound-test-helpers'
+import { describe, expect, it } from 'vitest'
 
 const catalog = await createCardCatalog(defaultSnapshotSource)
 const REDUCED_ITERATIONS = Math.min(FUZZ_ITERATIONS, 20)

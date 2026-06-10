@@ -1,7 +1,7 @@
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { GameState } from '@thejokersthief/riftbound-engine'
-import type { Action, GameEvent } from '@thejokersthief/riftbound-protocol'
 import { submit } from '@thejokersthief/riftbound-engine'
+import type { Action, GameEvent } from '@thejokersthief/riftbound-protocol'
 
 export type ScenarioResult = {
   finalState: GameState

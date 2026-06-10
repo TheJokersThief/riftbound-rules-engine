@@ -1,7 +1,14 @@
-import type { PlayerId, CardDefId, BattlefieldId, CardId, GameId, MatchId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { DeckConfig, GameState, MatchState } from '@thejokersthief/riftbound-engine'
 import { createMatchEngine } from '@thejokersthief/riftbound-engine'
+import type { BattlefieldId, CardDefId, CardId, PlayerId } from '@thejokersthief/riftbound-protocol'
+import {
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+} from '@thejokersthief/riftbound-protocol'
 
 // Infer sub-types from GameState to avoid engine re-exporting them
 type _Players = GameState['players']
@@ -15,23 +22,43 @@ type BattlefieldState = NonNullable<_Battlefields[keyof _Battlefields]>
 // Hard-coded card IDs from data/cards.json
 // ---------------------------------------------------------------------------
 
-const LEGEND_ID = 'ogs-017-024' as CardDefId
-const CHAMPION_ID = 'ogs-021-024' as CardDefId
+const LEGEND_ID = toCardDefId('ogs-017-024')
+const CHAMPION_ID = toCardDefId('ogs-021-024')
 const BATTLEFIELD_IDS: [CardDefId, CardDefId, CardDefId] = [
-  'unl-t01' as CardDefId,
-  'unl-t03' as CardDefId,
-  'unl-205-219' as CardDefId,
+  toCardDefId('unl-t01'),
+  toCardDefId('unl-t03'),
+  toCardDefId('unl-205-219'),
 ]
 const RUNE_IDS: CardDefId[] = [
-  'ogn-007-298', 'ogn-007a-298', 'ogn-042-298', 'ogn-042a-298', 'ogn-089a-298',
-  'ogn-089-298', 'ogn-126a-298', 'ogn-126-298', 'ogn-166-298', 'ogn-166a-298',
-] as CardDefId[]
+  'ogn-007-298',
+  'ogn-007a-298',
+  'ogn-042-298',
+  'ogn-042a-298',
+  'ogn-089a-298',
+  'ogn-089-298',
+  'ogn-126a-298',
+  'ogn-126-298',
+  'ogn-166-298',
+  'ogn-166a-298',
+].map(toCardDefId)
 
 const MAIN_DECK_POOL: CardDefId[] = [
-  'ogn-001-298', 'ogs-001-024', 'unl-001-219', 'sfd-002-221', 'ogn-002-298',
-  'unl-002-219', 'ogn-003-298', 'unl-003-219', 'ogs-004-024', 'unl-004-219',
-  'ogs-005-024', 'unl-005-219', 'ogs-006-024', 'sfd-006-221', 'ogn-004-298',
-] as CardDefId[]
+  'ogn-001-298',
+  'ogs-001-024',
+  'unl-001-219',
+  'sfd-002-221',
+  'ogn-002-298',
+  'unl-002-219',
+  'ogn-003-298',
+  'unl-003-219',
+  'ogs-004-024',
+  'unl-004-219',
+  'ogs-005-024',
+  'unl-005-219',
+  'ogs-006-024',
+  'sfd-006-221',
+  'ogn-004-298',
+].map(toCardDefId)
 
 function buildDefaultMainDeck(): CardDefId[] {
   const deck: CardDefId[] = []
@@ -66,7 +93,7 @@ export function buildDeck(overrides?: Partial<DeckConfig>): DeckConfig {
 let _boardCounter = 0
 
 function makeCardId(seed: number): CardId {
-  return `board-card-${seed}-${_boardCounter++}` as CardId
+  return toCardId(`board-card-${seed}-${_boardCounter++}`)
 }
 
 export function buildBoard(config: {
@@ -136,23 +163,22 @@ export function buildBoard(config: {
   // Apply card overrides
   const allCards: Record<CardId, CardInstance> = { ...baseCards }
   if (config.cards) {
-    for (const [cardId, partial] of Object.entries(config.cards)) {
-      const existing = allCards[cardId as CardId]
+    for (const [rawId, partial] of Object.entries(config.cards)) {
+      const typedId = toCardId(rawId)
+      const existing = allCards[typedId]
       if (existing) {
-        allCards[cardId as CardId] = { ...existing, ...partial }
+        allCards[typedId] = { ...existing, ...partial }
       } else {
-        // Create new card from partial, requiring at minimum id + defId + ownerId
-        const inst = partial as CardInstance
-        allCards[cardId as CardId] = {
-          id: cardId as CardId,
-          defId: inst.defId ?? (LEGEND_ID as CardDefId),
-          ownerId: inst.ownerId ?? p1,
-          exhausted: inst.exhausted ?? false,
-          buffAmount: inst.buffAmount ?? 0,
-          keywords: inst.keywords ?? [],
-          xp: inst.xp ?? 0,
-          counters: inst.counters ?? {},
-          faceDown: inst.faceDown ?? false,
+        allCards[typedId] = {
+          id: typedId,
+          defId: partial.defId ?? LEGEND_ID,
+          ownerId: partial.ownerId ?? p1,
+          exhausted: partial.exhausted ?? false,
+          buffAmount: partial.buffAmount ?? 0,
+          keywords: partial.keywords ?? [],
+          xp: partial.xp ?? 0,
+          counters: partial.counters ?? {},
+          faceDown: partial.faceDown ?? false,
         }
       }
     }
@@ -180,8 +206,8 @@ export function buildBoard(config: {
   const p2State = buildPlayerState(p2, p2LegendCardId, p2ChampionCardId)
 
   // Build battlefields
-  const p1BfId = `bf-${p1}` as BattlefieldId
-  const p2BfId = `bf-${p2}` as BattlefieldId
+  const p1BfId = toBattlefieldId(`bf-${p1}`)
+  const p2BfId = toBattlefieldId(`bf-${p2}`)
 
   const baseBattlefields: Record<BattlefieldId, BattlefieldState> = {
     [p1BfId]: { id: p1BfId, cardId: p1LegendCardId, controllerId: p1, units: [] },
@@ -189,17 +215,18 @@ export function buildBoard(config: {
   }
 
   if (config.battlefields) {
-    for (const [bfId, partial] of Object.entries(config.battlefields)) {
-      const existing = baseBattlefields[bfId as BattlefieldId]
+    for (const [rawBfId, partial] of Object.entries(config.battlefields)) {
+      const typedBfId = toBattlefieldId(rawBfId)
+      const existing = baseBattlefields[typedBfId]
       if (existing) {
-        baseBattlefields[bfId as BattlefieldId] = { ...existing, ...partial }
+        baseBattlefields[typedBfId] = { ...existing, ...partial }
       }
     }
   }
 
   const state: GameState = {
-    gameId: `game-board-${seed}` as GameId,
-    matchId: `match-board-${seed}` as MatchId,
+    gameId: toGameId(`game-board-${seed}`),
+    matchId: toMatchId(`match-board-${seed}`),
     playerIds: [p1, p2],
     cards: allCards,
     players: {

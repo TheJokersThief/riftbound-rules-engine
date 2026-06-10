@@ -157,6 +157,9 @@ importers:
       '@thejokersthief/riftbound-test-helpers':
         specifier: workspace:*
         version: link:../test-helpers
+      '@types/node':
+        specifier: ^25.9.2
+        version: 25.9.2
       oxlint:
         specifier: '*'
         version: 0.15.15

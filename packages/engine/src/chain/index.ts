@@ -1,9 +1,9 @@
-import type { GameEvent } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
-import type { GameState } from '../state/types.js'
-import type { RulesQuery } from '../rules-query/index.js'
+import type { GameEvent } from '@thejokersthief/riftbound-protocol'
 import { step } from '../interpreter/index.js'
+import type { RulesQuery } from '../rules-query/index.js'
+import type { GameState } from '../state/types.js'
 import { drainHot } from './hot.js'
 
 // ---------------------------------------------------------------------------
@@ -14,7 +14,7 @@ export function advance(
   state: GameState,
   query: RulesQuery,
   catalog: CardCatalog,
-  programs: ReadonlyMap<string, EffectProgram> = new Map(),
+  programs: ReadonlyMap<string, EffectProgram> = new Map()
 ): { state: GameState; events: GameEvent[] } {
   if (state.pendingDecision !== null) {
     return { state, events: [] }

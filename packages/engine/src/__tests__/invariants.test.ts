@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
 import { createCardCatalog, defaultSnapshotSource } from '@thejokersthief/riftbound-card-catalog'
 import { playFuzzGame } from '@thejokersthief/riftbound-test-helpers'
+import { describe, expect, it } from 'vitest'
 
 const catalog = await createCardCatalog(defaultSnapshotSource)
 const SEEDS = 10
@@ -25,7 +25,7 @@ describe('engine invariants', () => {
         const curr = states[i]!
         for (const pid of curr.playerIds) {
           expect(curr.players[pid]?.points ?? 0).toBeGreaterThanOrEqual(
-            prev.players[pid]?.points ?? 0,
+            prev.players[pid]?.points ?? 0
           )
         }
       }

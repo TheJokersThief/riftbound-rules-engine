@@ -1,10 +1,10 @@
-import type { CardId, DecisionId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { EffectNode } from '@thejokersthief/riftbound-effect-ir'
+import { toDecisionId } from '@thejokersthief/riftbound-protocol'
 import type { GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { GameState } from '../state/types.js'
-import type { EffectFrame } from '../state/stack.js'
 import type { RulesQuery } from '../rules-query/index.js'
+import type { EffectFrame } from '../state/stack.js'
+import type { GameState } from '../state/types.js'
 import { evalCondition, resolveSelector } from './selectors.js'
 
 // ---------------------------------------------------------------------------
@@ -16,7 +16,7 @@ export function dispatchNode(
   frame: EffectFrame,
   state: GameState,
   query: RulesQuery,
-  catalog: CardCatalog,
+  catalog: CardCatalog
 ): { state: GameState; events: GameEvent[] } {
   switch (node.type) {
     case 'Sequence': {
@@ -28,7 +28,7 @@ export function dispatchNode(
     }
 
     case 'Optional': {
-      const decisionId = `dec_${Math.random().toString(36).slice(2, 9)}` as DecisionId
+      const decisionId = toDecisionId(`dec_${Math.random().toString(36).slice(2, 9)}`)
       const resumeFrame: EffectFrame = {
         ...frame,
         remaining: [node.effect, ...frame.remaining],
@@ -52,7 +52,7 @@ export function dispatchNode(
     }
 
     case 'ChooseOne': {
-      const decisionId = `dec_${Math.random().toString(36).slice(2, 9)}` as DecisionId
+      const decisionId = toDecisionId(`dec_${Math.random().toString(36).slice(2, 9)}`)
       const resumeFrame: EffectFrame = { ...frame }
       const decisionFrame = {
         type: 'Decision' as const,
@@ -101,12 +101,12 @@ export function dispatchNode(
         return { state: { ...state, resolutionStack: newStack }, events: [] }
       }
       // Push one EffectFrame per target
-      const newFrames: EffectFrame[] = targets.map(targetId => ({
+      const newFrames: EffectFrame[] = targets.map((targetId) => ({
         type: 'Effect' as const,
         sourceId: frame.sourceId,
         controller: frame.controller,
         remaining: [node.effect],
-        targets: [targetId] as CardId[],
+        targets: [targetId],
       }))
       // Replace current frame with the per-target frames (plus remaining in last slot)
       // Keep frame.remaining on the last target's frame so execution continues after

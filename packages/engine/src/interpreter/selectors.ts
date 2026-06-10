@@ -1,28 +1,29 @@
-import type { CardId, PlayerId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type {
-  SelectorNode,
-  NumberExpr,
   ConditionNode,
+  NumberExpr,
   PlayerRef,
+  SelectorNode,
 } from '@thejokersthief/riftbound-effect-ir'
-import type { GameState, BattlefieldState } from '../state/types.js'
+import type { CardId, PlayerId } from '@thejokersthief/riftbound-protocol'
+import { typedObjectKeys } from '@thejokersthief/riftbound-protocol'
 import type { RulesQuery } from '../rules-query/index.js'
+import type { BattlefieldState, GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 
 function getCardsAtBattlefields(state: GameState): CardId[] {
-  return Object.values(state.battlefields).flatMap(bf => bf?.units ?? [])
+  return Object.values(state.battlefields).flatMap((bf) => bf?.units ?? [])
 }
 
 function getCardsAtBase(state: GameState): CardId[] {
-  return Object.values(state.players).flatMap(p => p?.base ?? [])
+  return Object.values(state.players).flatMap((p) => p?.base ?? [])
 }
 
 function getCardsInHand(state: GameState): CardId[] {
-  return Object.values(state.players).flatMap(p => p?.hand ?? [])
+  return Object.values(state.players).flatMap((p) => p?.hand ?? [])
 }
 
 function getBattlefieldOfCard(state: GameState, cardId: CardId): BattlefieldState | null {
@@ -58,14 +59,14 @@ export function resolveSelector(
   state: GameState,
   sourceId: CardId,
   query: RulesQuery,
-  catalog: CardCatalog,
+  catalog: CardCatalog
 ): CardId[] {
   const sourceCard = state.cards[sourceId]
   const sourceOwner = sourceCard?.ownerId
 
   // Step 1 — Scope
-  const candidates = Object.keys(state.cards) as CardId[]
-  const scoped = candidates.filter(id => {
+  const candidates = typedObjectKeys(state.cards)
+  const scoped = candidates.filter((id) => {
     const card = state.cards[id]!
     if (selector.scope === 'Friendly') return card.ownerId === sourceOwner
     if (selector.scope === 'Enemy') return card.ownerId !== sourceOwner
@@ -73,7 +74,7 @@ export function resolveSelector(
   })
 
   // Step 2 — ObjectType
-  const typed = scoped.filter(id => {
+  const typed = scoped.filter((id) => {
     const def = catalog.find(state.cards[id]!.defId)
     if (!def) return false
     if (selector.objectType === 'Card') return true
@@ -86,7 +87,7 @@ export function resolveSelector(
 
   // Step 3 — Location
   const location = selector.location
-  const located = typed.filter(id => {
+  const located = typed.filter((id) => {
     switch (location.type) {
       case 'Here': {
         const sourceBf = getBattlefieldOfCard(state, sourceId)
@@ -100,8 +101,8 @@ export function resolveSelector(
       case 'InHand':
         return getCardsInHand(state).includes(id)
       case 'TopOfDeck': {
-        const allDeckTops = Object.values(state.players).flatMap(p =>
-          p?.mainDeck.slice(0, location.count) ?? [],
+        const allDeckTops = Object.values(state.players).flatMap(
+          (p) => p?.mainDeck.slice(0, location.count) ?? []
         )
         return allDeckTops.includes(id)
       }
@@ -109,9 +110,9 @@ export function resolveSelector(
   })
 
   // Step 4 — Filters
-  const filtered = located.filter(id => {
+  const filtered = located.filter((id) => {
     const card = state.cards[id]!
-    return selector.filters.every(f => {
+    return selector.filters.every((f) => {
       switch (f.type) {
         case 'MightLE':
           return query.mightOf(id) <= f.value
@@ -156,7 +157,7 @@ export function evalNumberExpr(
   state: GameState,
   sourceId: CardId,
   query: RulesQuery,
-  catalog: CardCatalog,
+  catalog: CardCatalog
 ): number {
   if (typeof expr === 'number') return expr
   if (expr.type === 'MightOf') {
@@ -176,28 +177,28 @@ export function evalCondition(
   state: GameState,
   sourceId: CardId,
   query: RulesQuery,
-  catalog: CardCatalog,
+  catalog: CardCatalog
 ): boolean {
   switch (cond.type) {
     case 'And':
-      return cond.conditions.every(c => evalCondition(c, state, sourceId, query, catalog))
+      return cond.conditions.every((c) => evalCondition(c, state, sourceId, query, catalog))
     case 'Or':
-      return cond.conditions.some(c => evalCondition(c, state, sourceId, query, catalog))
+      return cond.conditions.some((c) => evalCondition(c, state, sourceId, query, catalog))
     case 'Not':
       return !evalCondition(cond.condition, state, sourceId, query, catalog)
     case 'SelectorNonEmpty':
       return resolveSelector(cond.selector, state, sourceId, query, catalog).length > 0
     case 'CardIsBuffed':
       return resolveSelector(cond.selector, state, sourceId, query, catalog).some(
-        id => (state.cards[id]?.buffAmount ?? 0) > 0,
+        (id) => (state.cards[id]?.buffAmount ?? 0) > 0
       )
     case 'CardHasKeyword':
-      return resolveSelector(cond.selector, state, sourceId, query, catalog).some(id =>
-        query.keywordsOf(id).includes(cond.keyword),
+      return resolveSelector(cond.selector, state, sourceId, query, catalog).some((id) =>
+        query.keywordsOf(id).includes(cond.keyword)
       )
     case 'ControlsBattlefield': {
       const playerId = resolvePlayerRef(cond.player, state, sourceId)
-      return Object.values(state.battlefields).some(bf => bf?.controllerId === playerId)
+      return Object.values(state.battlefields).some((bf) => bf?.controllerId === playerId)
     }
     case 'PlayerHasPoints': {
       const playerId = resolvePlayerRef(cond.player, state, sourceId)

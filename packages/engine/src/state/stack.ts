@@ -1,11 +1,11 @@
-import { z } from 'zod'
+import { EffectNodeSchema } from '@thejokersthief/riftbound-effect-ir'
 import {
-  CardIdSchema,
   BattlefieldIdSchema,
+  CardIdSchema,
   DecisionIdSchema,
   PlayerIdSchema,
 } from '@thejokersthief/riftbound-protocol'
-import { EffectNodeSchema } from '@thejokersthief/riftbound-effect-ir'
+import { z } from 'zod'
 
 // DamageAssignment — defined locally (protocol uses 'defenderId', this uses 'targetId' per engine spec)
 export const DamageAssignmentSchema = z.object({

@@ -1,23 +1,23 @@
+import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type {
-  PlayerView,
-  SelfView,
-  OpponentView,
-  SharedView,
+  CardId,
   CardInstanceView,
   ChainItemView,
-  RuneSlotView,
+  OpponentView,
   PlayerId,
-  CardId,
+  PlayerView,
+  RuneSlotView,
+  SelfView,
+  SharedView,
 } from '@thejokersthief/riftbound-protocol'
 import { PlayerViewSchema } from '@thejokersthief/riftbound-protocol'
-import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { GameState, RuneSlot } from '../state/types.js'
 
 function toCardInstanceView(
   cardId: CardId,
   state: GameState,
   catalog: CardCatalog,
-  hidden: boolean,
+  hidden: boolean
 ): CardInstanceView {
   if (hidden) {
     return {
@@ -68,34 +68,29 @@ function toRuneSlotView(slot: RuneSlot, state: GameState): RuneSlotView {
 
 function activeBattlefieldCardId(state: GameState, playerId: PlayerId): CardId | null {
   const bfs = Object.values(state.battlefields)
-  const controlled = bfs.find(bf => bf != null && bf.controllerId === playerId)
+  const controlled = bfs.find((bf) => bf != null && bf.controllerId === playerId)
   return controlled?.cardId ?? bfs[0]?.cardId ?? null
 }
 
-export function viewFor(
-  state: GameState,
-  playerId: PlayerId,
-  catalog: CardCatalog,
-): PlayerView {
-  const opponentId =
-    state.playerIds[0] === playerId ? state.playerIds[1]! : state.playerIds[0]!
+export function viewFor(state: GameState, playerId: PlayerId, catalog: CardCatalog): PlayerView {
+  const opponentId = state.playerIds[0] === playerId ? state.playerIds[1]! : state.playerIds[0]!
 
   const selfPlayer = state.players[playerId]!
   const oppPlayer = state.players[opponentId]!
 
   const self: SelfView = {
     playerId,
-    hand: selfPlayer.hand.map(id => toCardInstanceView(id, state, catalog, false)),
+    hand: selfPlayer.hand.map((id) => toCardInstanceView(id, state, catalog, false)),
     mainDeck: { count: selfPlayer.mainDeck.length },
     runeDeck: { count: selfPlayer.runeDeck.length },
-    runePool: selfPlayer.runePool.map(slot => toRuneSlotView(slot, state)),
+    runePool: selfPlayer.runePool.map((slot) => toRuneSlotView(slot, state)),
     legend: toCardInstanceView(selfPlayer.legendZone, state, catalog, false),
     champion: toCardInstanceView(selfPlayer.championZone, state, catalog, false),
     battlefield: (() => {
       const bfCardId = activeBattlefieldCardId(state, playerId)
       return bfCardId ? toCardInstanceView(bfCardId, state, catalog, false) : null
     })(),
-    base: selfPlayer.base.map(id => toCardInstanceView(id, state, catalog, false)),
+    base: selfPlayer.base.map((id) => toCardInstanceView(id, state, catalog, false)),
     resources: selfPlayer.resources,
     points: selfPlayer.points,
   }
@@ -105,14 +100,14 @@ export function viewFor(
     handCount: oppPlayer.hand.length,
     mainDeck: { count: oppPlayer.mainDeck.length },
     runeDeck: { count: oppPlayer.runeDeck.length },
-    runePool: oppPlayer.runePool.map(slot => toRuneSlotView(slot, state)),
+    runePool: oppPlayer.runePool.map((slot) => toRuneSlotView(slot, state)),
     legend: toCardInstanceView(oppPlayer.legendZone, state, catalog, false),
     champion: toCardInstanceView(oppPlayer.championZone, state, catalog, false),
     battlefield: (() => {
       const bfCardId = activeBattlefieldCardId(state, opponentId)
       return bfCardId ? toCardInstanceView(bfCardId, state, catalog, false) : null
     })(),
-    base: oppPlayer.base.map(id => {
+    base: oppPlayer.base.map((id) => {
       const card = state.cards[id]
       return toCardInstanceView(id, state, catalog, card?.faceDown ?? false)
     }),
@@ -132,7 +127,7 @@ export function viewFor(
         defId: item.defId,
         controllerId: item.controller,
         resolved: item.resolved,
-      }),
+      })
     ),
     pendingDecision: state.pendingDecision,
     matchRecord: { wins: {} },
@@ -143,9 +138,7 @@ export function viewFor(
   if (process.env['NODE_ENV'] !== 'production') {
     const result = PlayerViewSchema.safeParse(view)
     if (!result.success) {
-      throw new Error(
-        `viewFor validation failed: ${JSON.stringify(result.error.issues)}`,
-      )
+      throw new Error(`viewFor validation failed: ${JSON.stringify(result.error.issues)}`)
     }
   }
 

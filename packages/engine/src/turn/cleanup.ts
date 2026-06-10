@@ -1,10 +1,10 @@
-import type { GameEvent, PlayerId, BattlefieldId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
-import type { GameState } from '../state/types.js'
+import type { GameEvent, PlayerId } from '@thejokersthief/riftbound-protocol'
+import { advance } from '../chain/index.js'
 import type { RulesQuery } from '../rules-query/index.js'
 import { fold } from '../state/fold.js'
-import { advance } from '../chain/index.js'
+import type { GameState } from '../state/types.js'
 import { checkScoring } from './scoring.js'
 
 // ---------------------------------------------------------------------------
@@ -35,7 +35,7 @@ export function runCleanup(
   playerId: PlayerId,
   query: RulesQuery,
   catalog: CardCatalog,
-  programs?: ReadonlyMap<string, EffectProgram>,
+  programs?: ReadonlyMap<string, EffectProgram>
 ): { state: GameState; events: GameEvent[] } {
   const allEvents: GameEvent[] = []
 
@@ -53,7 +53,7 @@ export function runCleanup(
     ...state,
     scoredThisTurn: {
       ...state.scoredThisTurn,
-      [playerId]: [] as BattlefieldId[],
+      [playerId]: [],
     },
     holdEligible: [],
   }

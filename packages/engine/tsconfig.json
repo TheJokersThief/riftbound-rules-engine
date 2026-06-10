@@ -9,5 +9,6 @@
     { "path": "../effect-ir" },
     { "path": "../card-catalog" }
   ],
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["dist", "src/**/*.test.ts", "src/__tests__"]
 }

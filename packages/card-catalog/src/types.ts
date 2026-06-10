@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { CardDefIdSchema } from '@thejokersthief/riftbound-protocol'
+import { z } from 'zod'
 
 export const PlayCostSchema = z.object({
   energy: z.number().int().min(0),
@@ -21,13 +21,7 @@ export const CardTypeSchema = z.enum([
 
 export type CardType = z.infer<typeof CardTypeSchema>
 
-export const DeckZoneSchema = z.enum([
-  'Main',
-  'Rune',
-  'Legend',
-  'Champion',
-  'Battlefield',
-])
+export const DeckZoneSchema = z.enum(['Main', 'Rune', 'Legend', 'Champion', 'Battlefield'])
 
 export type DeckZone = z.infer<typeof DeckZoneSchema>
 

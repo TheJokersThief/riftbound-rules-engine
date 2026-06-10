@@ -1,37 +1,45 @@
-import { describe, it, expect } from 'vitest'
 import type {
-  PlayerId,
-  CardId,
   BattlefieldId,
   CardDefId,
+  CardId,
   GameId,
   MatchId,
+  PlayerId,
 } from '@thejokersthief/riftbound-protocol'
-import { nextRng, nextInt, shuffle } from './rng.js'
+import {
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+  toPlayerId,
+} from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it } from 'vitest'
+import { nextInt, nextRng, shuffle } from './rng.js'
 import { fold } from './state/fold.js'
+import { deserialize, serialize } from './state/serialization.js'
+import { StackFrameSchema } from './state/stack.js'
 import type { GameState } from './state/types.js'
 import { GameStateSchema } from './state/types.js'
-import { StackFrameSchema } from './state/stack.js'
-import { serialize, deserialize } from './state/serialization.js'
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
 // ---------------------------------------------------------------------------
 
-const p1 = 'player1' as PlayerId
-const p2 = 'player2' as PlayerId
-const card1 = 'card001' as CardId
-const bf1 = 'bf001' as BattlefieldId
+const p1 = toPlayerId('player1')
+const p2 = toPlayerId('player2')
+const card1 = toCardId('card001')
+const bf1 = toBattlefieldId('bf001')
 
 function makeState(): GameState {
   return {
-    gameId: 'game1' as GameId,
-    matchId: 'match1' as MatchId,
+    gameId: toGameId('game1'),
+    matchId: toMatchId('match1'),
     playerIds: [p1, p2],
     cards: {
       [card1]: {
         id: card1,
-        defId: 'def001' as CardDefId,
+        defId: toCardDefId('def001'),
         ownerId: p1,
         exhausted: false,
         buffAmount: 0,
@@ -47,8 +55,8 @@ function makeState(): GameState {
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg1' as CardId,
-        championZone: 'chm1' as CardId,
+        legendZone: toCardId('leg1'),
+        championZone: toCardId('chm1'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -58,8 +66,8 @@ function makeState(): GameState {
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg2' as CardId,
-        championZone: 'chm2' as CardId,
+        legendZone: toCardId('leg2'),
+        championZone: toCardId('chm2'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -68,7 +76,7 @@ function makeState(): GameState {
     battlefields: {
       [bf1]: {
         id: bf1,
-        cardId: 'bfcard1' as CardId,
+        cardId: toCardId('bfcard1'),
         controllerId: null,
         units: [],
       },
@@ -187,7 +195,7 @@ describe('fold', () => {
 
   it('GameEnded — status=ended, winner set', () => {
     const state = makeState()
-    const next = fold(state, { type: 'GameEnded', gameId: 'game1' as GameId, winner: p1 })
+    const next = fold(state, { type: 'GameEnded', gameId: toGameId('game1'), winner: p1 })
     expect(next.status).toBe('ended')
     expect(next.winner).toBe(p1)
   })

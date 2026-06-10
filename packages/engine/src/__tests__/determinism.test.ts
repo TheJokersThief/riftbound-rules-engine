@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
 import { createCardCatalog, defaultSnapshotSource } from '@thejokersthief/riftbound-card-catalog'
 import { serialize } from '@thejokersthief/riftbound-engine'
 import { playFuzzGame } from '@thejokersthief/riftbound-test-helpers'
+import { describe, expect, it } from 'vitest'
 
 const catalog = await createCardCatalog(defaultSnapshotSource)
 const DETERMINISM_ITERATIONS = 50

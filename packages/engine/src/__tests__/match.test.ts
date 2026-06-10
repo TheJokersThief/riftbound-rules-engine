@@ -1,33 +1,42 @@
-import { describe, it, expect, vi } from 'vitest'
 import type {
-  PlayerId,
-  CardId,
+  Action,
   BattlefieldId,
   CardDefId,
+  CardId,
   GameId,
   MatchId,
-  Action,
+  PlayerId,
   PlayerView,
 } from '@thejokersthief/riftbound-protocol'
-import type { GameState } from '../state/types.js'
-import type { DeckConfig } from '../match/state.js'
 import {
-  createMatch,
-  submitToMatch,
-  legalMatchActions,
-  viewForMatch,
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+  toPlayerId,
+  toZoneId,
+} from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it, vi } from 'vitest'
+import {
   type GameEngineFunctions,
+  createMatch,
+  legalMatchActions,
+  submitToMatch,
+  viewForMatch,
 } from '../match/index.js'
+import type { DeckConfig } from '../match/state.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = 'player1' as PlayerId
-const p2 = 'player2' as PlayerId
-const card1 = 'card001' as CardId
-const bf1 = 'bf001' as BattlefieldId
-const def1 = 'def001' as CardDefId
+const p1 = toPlayerId('player1')
+const p2 = toPlayerId('player2')
+const card1 = toCardId('card001')
+const bf1 = toBattlefieldId('bf001')
+const def1 = toCardDefId('def001')
 
 // ---------------------------------------------------------------------------
 // GameState factory
@@ -35,12 +44,12 @@ const def1 = 'def001' as CardDefId
 
 function makeGameState(
   players: readonly [PlayerId, PlayerId],
-  overrides: Partial<GameState> = {},
+  overrides: Partial<GameState> = {}
 ): GameState {
   const [pa, pb] = players
   return {
-    gameId: 'game1' as GameId,
-    matchId: 'match1' as MatchId,
+    gameId: toGameId('game1'),
+    matchId: toMatchId('match1'),
     playerIds: [pa, pb],
     cards: {
       [card1]: {
@@ -61,8 +70,8 @@ function makeGameState(
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg1' as CardId,
-        championZone: 'chm1' as CardId,
+        legendZone: toCardId('leg1'),
+        championZone: toCardId('chm1'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -72,8 +81,8 @@ function makeGameState(
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg2' as CardId,
-        championZone: 'chm2' as CardId,
+        legendZone: toCardId('leg2'),
+        championZone: toCardId('chm2'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -82,7 +91,7 @@ function makeGameState(
     battlefields: {
       [bf1]: {
         id: bf1,
-        cardId: 'bfcard1' as CardId,
+        cardId: toCardId('bfcard1'),
         controllerId: null,
         units: [],
       },
@@ -201,7 +210,10 @@ describe('submitToMatch', () => {
     const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
     // Start with p1 already having 1 win
     const initialMatch = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine)
-    const matchWithOneWin = { ...initialMatch, gameWins: { [p1]: 1, [p2]: 0 } as Record<PlayerId, number> }
+    const matchWithOneWin = {
+      ...initialMatch,
+      gameWins: { [p1]: 1, [p2]: 0 } as Record<PlayerId, number>,
+    }
 
     const endedGame = makeGameState([p1, p2], { status: 'ended', winner: p1 })
     const engine: GameEngineFunctions = {

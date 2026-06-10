@@ -1,6 +1,6 @@
 import type { BattlefieldId, GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { GameState } from '../state/types.js'
 import { fold } from '../state/fold.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // openShowdown
@@ -9,7 +9,7 @@ import { fold } from '../state/fold.js'
 export function openShowdown(
   state: GameState,
   battlefieldId: BattlefieldId,
-  kind: 'Combat' | 'Control',
+  kind: 'Combat' | 'Control'
 ): { state: GameState; events: GameEvent[] } {
   const event: GameEvent = { type: 'ShowdownOpened', battlefieldId, kind }
   state = fold(state, event)
@@ -33,9 +33,7 @@ export function openShowdown(
 // closeShowdown
 // ---------------------------------------------------------------------------
 
-export function closeShowdown(
-  state: GameState,
-): { state: GameState; events: GameEvent[] } {
+export function closeShowdown(state: GameState): { state: GameState; events: GameEvent[] } {
   const battlefieldId = state.chain.showdown?.battlefieldId
   if (!battlefieldId) {
     return { state, events: [] }

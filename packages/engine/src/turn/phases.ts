@@ -1,7 +1,8 @@
-import type { GameEvent, BattlefieldId } from '@thejokersthief/riftbound-protocol'
-import type { GameState } from '../state/types.js'
+import type { GameEvent } from '@thejokersthief/riftbound-protocol'
+import { typedObjectKeys } from '@thejokersthief/riftbound-protocol'
 import type { RulesQuery } from '../rules-query/index.js'
 import { fold } from '../state/fold.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // runStartPhase
@@ -9,7 +10,7 @@ import { fold } from '../state/fold.js'
 
 export function runStartPhase(
   state: GameState,
-  _query: RulesQuery,
+  _query: RulesQuery
 ): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
 
@@ -25,9 +26,9 @@ export function runStartPhase(
   events.push(phaseStarted)
   state = fold(state, phaseStarted)
 
-  const holdEligibleIds = (
-    Object.keys(state.battlefields) as BattlefieldId[]
-  ).filter(bfId => state.battlefields[bfId]?.controllerId === state.activePlayerId)
+  const holdEligibleIds = typedObjectKeys(state.battlefields).filter(
+    (bfId) => state.battlefields[bfId]?.controllerId === state.activePlayerId
+  )
 
   state = { ...state, holdEligible: holdEligibleIds }
 
@@ -47,9 +48,7 @@ export function runStartPhase(
 // runChannelPhase
 // ---------------------------------------------------------------------------
 
-export function runChannelPhase(
-  state: GameState,
-): { state: GameState; events: GameEvent[] } {
+export function runChannelPhase(state: GameState): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
 
   const phaseStarted: GameEvent = { type: 'PhaseStarted', phase: 'Channel' }
@@ -66,10 +65,7 @@ export function runChannelPhase(
   return { state, events }
 }
 
-function channelOneRune(
-  state: GameState,
-  events: GameEvent[],
-): GameState {
+function channelOneRune(state: GameState, events: GameEvent[]): GameState {
   const playerId = state.activePlayerId
   const player = state.players[playerId]
   if (!player) return state
@@ -88,12 +84,12 @@ function channelOneRune(
   state = fold(state, runeChanneled)
 
   // fold.ts returns state unchanged for RuneChanneled, so manually update state
-  const firstEmptyIndex = player.runePool.findIndex(slot => slot.filled === false)
+  const firstEmptyIndex = player.runePool.findIndex((slot) => slot.filled === false)
 
   const newRunePool =
     firstEmptyIndex >= 0
       ? player.runePool.map((slot, i) =>
-          i === firstEmptyIndex ? { filled: true, runeCardId: topCardId } : slot,
+          i === firstEmptyIndex ? { filled: true, runeCardId: topCardId } : slot
         )
       : player.runePool
 
@@ -118,9 +114,7 @@ function channelOneRune(
 // startMainPhase
 // ---------------------------------------------------------------------------
 
-export function startMainPhase(
-  state: GameState,
-): { state: GameState; events: GameEvent[] } {
+export function startMainPhase(state: GameState): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
   const phaseStarted: GameEvent = { type: 'PhaseStarted', phase: 'Main' }
   events.push(phaseStarted)
@@ -132,9 +126,7 @@ export function startMainPhase(
 // startEndingPhase
 // ---------------------------------------------------------------------------
 
-export function startEndingPhase(
-  state: GameState,
-): { state: GameState; events: GameEvent[] } {
+export function startEndingPhase(state: GameState): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
   const phaseStarted: GameEvent = { type: 'PhaseStarted', phase: 'Ending' }
   events.push(phaseStarted)
@@ -146,9 +138,7 @@ export function startEndingPhase(
 // advanceTurnEnd
 // ---------------------------------------------------------------------------
 
-export function advanceTurnEnd(
-  state: GameState,
-): { state: GameState; events: GameEvent[] } {
+export function advanceTurnEnd(state: GameState): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
 
   const turnEnded: GameEvent = {

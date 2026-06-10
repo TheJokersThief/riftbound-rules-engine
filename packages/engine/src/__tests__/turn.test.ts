@@ -1,36 +1,45 @@
-import { describe, it, expect } from 'vitest'
+import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
 import type {
-  PlayerId,
-  CardId,
   BattlefieldId,
   CardDefId,
+  CardId,
   GameId,
   MatchId,
+  PlayerId,
 } from '@thejokersthief/riftbound-protocol'
-import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
-import type { GameState } from '../state/types.js'
-import { createRulesQuery } from '../rules-query/index.js'
 import {
-  runStartPhase,
-  runChannelPhase,
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+  toPlayerId,
+  toZoneId,
+} from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it } from 'vitest'
+import { createRulesQuery } from '../rules-query/index.js'
+import type { GameState } from '../state/types.js'
+import {
   advanceTurnEnd,
   attemptScore,
   checkScoring,
   checkWinCondition,
+  runChannelPhase,
+  runStartPhase,
 } from '../turn/index.js'
 
 // ---------------------------------------------------------------------------
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = 'player1' as PlayerId
-const p2 = 'player2' as PlayerId
-const card1 = 'card001' as CardId
-const card2 = 'card002' as CardId
-const rune1 = 'rune001' as CardId
-const bf1 = 'bf001' as BattlefieldId
-const bf2 = 'bf002' as BattlefieldId
-const def1 = 'def001' as CardDefId
+const p1 = toPlayerId('player1')
+const p2 = toPlayerId('player2')
+const card1 = toCardId('card001')
+const card2 = toCardId('card002')
+const rune1 = toCardId('rune001')
+const bf1 = toBattlefieldId('bf001')
+const bf2 = toBattlefieldId('bf002')
+const def1 = toCardDefId('def001')
 
 // ---------------------------------------------------------------------------
 // Card catalog fixture
@@ -69,8 +78,8 @@ const mockCatalog: CardCatalog = {
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
   return {
-    gameId: 'game1' as GameId,
-    matchId: 'match1' as MatchId,
+    gameId: toGameId('game1'),
+    matchId: toMatchId('match1'),
     playerIds: [p1, p2],
     cards: {
       [card1]: {
@@ -88,22 +97,22 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     players: {
       [p1]: {
         hand: [],
-        mainDeck: ['deckCard1' as CardId, 'deckCard2' as CardId],
+        mainDeck: [toCardId('deckCard1'), toCardId('deckCard2')],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg1' as CardId,
-        championZone: 'chm1' as CardId,
+        legendZone: toCardId('leg1'),
+        championZone: toCardId('chm1'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
       },
       [p2]: {
         hand: [],
-        mainDeck: ['deckCard3' as CardId],
+        mainDeck: [toCardId('deckCard3')],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg2' as CardId,
-        championZone: 'chm2' as CardId,
+        legendZone: toCardId('leg2'),
+        championZone: toCardId('chm2'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -112,7 +121,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     battlefields: {
       [bf1]: {
         id: bf1,
-        cardId: 'bfcard1' as CardId,
+        cardId: toCardId('bfcard1'),
         controllerId: null,
         units: [card1],
       },
@@ -144,14 +153,14 @@ describe('runStartPhase()', () => {
     const query = createRulesQuery(state, mockCatalog)
     const result = runStartPhase(state, query)
 
-    const types = result.events.map(e => e.type)
+    const types = result.events.map((e) => e.type)
     expect(types).toContain('TurnStarted')
     expect(types).toContain('PhaseStarted')
 
-    const phaseEvent = result.events.find(e => e.type === 'PhaseStarted')
+    const phaseEvent = result.events.find((e) => e.type === 'PhaseStarted')
     expect(phaseEvent).toMatchObject({ type: 'PhaseStarted', phase: 'Start' })
 
-    const turnStarted = result.events.find(e => e.type === 'TurnStarted')
+    const turnStarted = result.events.find((e) => e.type === 'TurnStarted')
     expect(turnStarted).toMatchObject({ type: 'TurnStarted', turnNumber: 1, activePlayerId: p1 })
   })
 
@@ -185,7 +194,7 @@ describe('runStartPhase()', () => {
     const query = createRulesQuery(state, mockCatalog)
     const result = runStartPhase(state, query)
 
-    const readiedEvents = result.events.filter(e => e.type === 'CardReadied')
+    const readiedEvents = result.events.filter((e) => e.type === 'CardReadied')
     // Only the active player's card should be readied
     expect(readiedEvents).toHaveLength(1)
     expect(readiedEvents[0]).toMatchObject({ type: 'CardReadied', cardId: card1 })
@@ -201,13 +210,13 @@ describe('runStartPhase()', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: p1,
           units: [],
         },
         [bf2]: {
           id: bf2,
-          cardId: 'bfcard2' as CardId,
+          cardId: toCardId('bfcard2'),
           controllerId: p2,
           units: [],
         },
@@ -234,8 +243,8 @@ describe('runChannelPhase()', () => {
           mainDeck: [],
           runeDeck: [rune1],
           runePool: [{ filled: false, runeCardId: null }],
-          legendZone: 'leg1' as CardId,
-          championZone: 'chm1' as CardId,
+          legendZone: toCardId('leg1'),
+          championZone: toCardId('chm1'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 0,
@@ -245,8 +254,8 @@ describe('runChannelPhase()', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg2' as CardId,
-          championZone: 'chm2' as CardId,
+          legendZone: toCardId('leg2'),
+          championZone: toCardId('chm2'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 0,
@@ -256,7 +265,7 @@ describe('runChannelPhase()', () => {
 
     const result = runChannelPhase(state)
 
-    const runeEvents = result.events.filter(e => e.type === 'RuneChanneled')
+    const runeEvents = result.events.filter((e) => e.type === 'RuneChanneled')
     expect(runeEvents).toHaveLength(1)
     expect(runeEvents[0]).toMatchObject({ type: 'RuneChanneled', playerId: p1, cardId: rune1 })
 
@@ -274,12 +283,12 @@ describe('runChannelPhase()', () => {
     // p1 starts with empty runeDeck by default
     const result = runChannelPhase(state)
 
-    const runeEvents = result.events.filter(e => e.type === 'RuneChanneled')
+    const runeEvents = result.events.filter((e) => e.type === 'RuneChanneled')
     expect(runeEvents).toHaveLength(0)
   })
 
   it('channels two runes when firstTurnSecondPlayer is true', () => {
-    const rune2 = 'rune002' as CardId
+    const rune2 = toCardId('rune002')
     const state = makeState({
       firstTurnSecondPlayer: true,
       players: {
@@ -291,8 +300,8 @@ describe('runChannelPhase()', () => {
             { filled: false, runeCardId: null },
             { filled: false, runeCardId: null },
           ],
-          legendZone: 'leg1' as CardId,
-          championZone: 'chm1' as CardId,
+          legendZone: toCardId('leg1'),
+          championZone: toCardId('chm1'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 0,
@@ -302,8 +311,8 @@ describe('runChannelPhase()', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg2' as CardId,
-          championZone: 'chm2' as CardId,
+          legendZone: toCardId('leg2'),
+          championZone: toCardId('chm2'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 0,
@@ -313,7 +322,7 @@ describe('runChannelPhase()', () => {
 
     const result = runChannelPhase(state)
 
-    const runeEvents = result.events.filter(e => e.type === 'RuneChanneled')
+    const runeEvents = result.events.filter((e) => e.type === 'RuneChanneled')
     expect(runeEvents).toHaveLength(2)
     expect(result.state.firstTurnSecondPlayer).toBe(false)
     expect(result.state.players[p1]?.runeDeck).toHaveLength(0)
@@ -330,7 +339,7 @@ describe('attemptScore()', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: p1,
           units: [],
         },
@@ -338,8 +347,13 @@ describe('attemptScore()', () => {
     })
     const result = attemptScore(state, p1, 'Hold', bf1)
 
-    const scored = result.events.find(e => e.type === 'PointScored')
-    expect(scored).toMatchObject({ type: 'PointScored', playerId: p1, method: 'Hold', battlefieldId: bf1 })
+    const scored = result.events.find((e) => e.type === 'PointScored')
+    expect(scored).toMatchObject({
+      type: 'PointScored',
+      playerId: p1,
+      method: 'Hold',
+      battlefieldId: bf1,
+    })
     expect(result.state.players[p1]?.points).toBe(1)
   })
 
@@ -351,8 +365,8 @@ describe('attemptScore()', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg1' as CardId,
-          championZone: 'chm1' as CardId,
+          legendZone: toCardId('leg1'),
+          championZone: toCardId('chm1'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 5,
@@ -362,8 +376,8 @@ describe('attemptScore()', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg2' as CardId,
-          championZone: 'chm2' as CardId,
+          legendZone: toCardId('leg2'),
+          championZone: toCardId('chm2'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 0,
@@ -372,7 +386,7 @@ describe('attemptScore()', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: p1,
           units: [],
         },
@@ -380,7 +394,7 @@ describe('attemptScore()', () => {
     })
     const result = attemptScore(state, p1, 'Conquer', bf1)
 
-    const scored = result.events.find(e => e.type === 'PointScored')
+    const scored = result.events.find((e) => e.type === 'PointScored')
     expect(scored).toBeDefined()
     expect(result.state.players[p1]?.points).toBe(6)
   })
@@ -390,11 +404,11 @@ describe('attemptScore()', () => {
       players: {
         [p1]: {
           hand: [],
-          mainDeck: ['deckCard1' as CardId],
+          mainDeck: [toCardId('deckCard1')],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg1' as CardId,
-          championZone: 'chm1' as CardId,
+          legendZone: toCardId('leg1'),
+          championZone: toCardId('chm1'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 7,
@@ -404,8 +418,8 @@ describe('attemptScore()', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg2' as CardId,
-          championZone: 'chm2' as CardId,
+          legendZone: toCardId('leg2'),
+          championZone: toCardId('chm2'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 0,
@@ -414,13 +428,13 @@ describe('attemptScore()', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: p1,
           units: [],
         },
         [bf2]: {
           id: bf2,
-          cardId: 'bfcard2' as CardId,
+          cardId: toCardId('bfcard2'),
           controllerId: null,
           units: [],
         },
@@ -431,10 +445,10 @@ describe('attemptScore()', () => {
 
     const result = attemptScore(state, p1, 'Conquer', bf1)
 
-    const scored = result.events.find(e => e.type === 'PointScored')
+    const scored = result.events.find((e) => e.type === 'PointScored')
     expect(scored).toBeUndefined()
 
-    const drawn = result.events.find(e => e.type === 'CardDrawn')
+    const drawn = result.events.find((e) => e.type === 'CardDrawn')
     expect(drawn).toBeDefined()
     // Points unchanged
     expect(result.state.players[p1]?.points).toBe(7)
@@ -451,13 +465,13 @@ describe('checkScoring()', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: p1,
           units: [],
         },
         [bf2]: {
           id: bf2,
-          cardId: 'bfcard2' as CardId,
+          cardId: toCardId('bfcard2'),
           controllerId: p2,
           units: [],
         },
@@ -467,7 +481,7 @@ describe('checkScoring()', () => {
     const query = createRulesQuery(state, mockCatalog)
     const result = checkScoring(state, p1, query)
 
-    const scored = result.events.filter(e => e.type === 'PointScored')
+    const scored = result.events.filter((e) => e.type === 'PointScored')
     // Only bf1 is controlled by p1
     expect(scored).toHaveLength(1)
     expect(scored[0]).toMatchObject({ battlefieldId: bf1, method: 'Hold' })
@@ -487,8 +501,8 @@ describe('checkWinCondition()', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg1' as CardId,
-          championZone: 'chm1' as CardId,
+          legendZone: toCardId('leg1'),
+          championZone: toCardId('chm1'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 8,
@@ -498,8 +512,8 @@ describe('checkWinCondition()', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg2' as CardId,
-          championZone: 'chm2' as CardId,
+          legendZone: toCardId('leg2'),
+          championZone: toCardId('chm2'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 5,
@@ -520,8 +534,8 @@ describe('checkWinCondition()', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg1' as CardId,
-          championZone: 'chm1' as CardId,
+          legendZone: toCardId('leg1'),
+          championZone: toCardId('chm1'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 8,
@@ -531,8 +545,8 @@ describe('checkWinCondition()', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg2' as CardId,
-          championZone: 'chm2' as CardId,
+          legendZone: toCardId('leg2'),
+          championZone: toCardId('chm2'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 8,
@@ -558,7 +572,7 @@ describe('advanceTurnEnd()', () => {
     expect(result.state.activePlayerId).toBe(p2)
     expect(result.state.turnNumber).toBe(2)
 
-    const turnEndedEvent = result.events.find(e => e.type === 'TurnEnded')
+    const turnEndedEvent = result.events.find((e) => e.type === 'TurnEnded')
     expect(turnEndedEvent).toMatchObject({ type: 'TurnEnded', turnNumber: 1, activePlayerId: p1 })
   })
 

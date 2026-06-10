@@ -16,8 +16,9 @@
 // automatic turn phases — a game server would call these between player actions.
 // ---------------------------------------------------------------------------
 
-import type { PlayerId, CardDefId, MatchId, BattlefieldId } from '@thejokersthief/riftbound-protocol'
+import type { PlayerId, CardDefId } from '@thejokersthief/riftbound-protocol'
 import type { GameEvent } from '@thejokersthief/riftbound-protocol'
+import { toPlayerId, toCardDefId, toMatchId, typedObjectKeys } from '@thejokersthief/riftbound-protocol'
 import type { DeckConfig, GameState } from '@thejokersthief/riftbound-engine'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import {
@@ -42,8 +43,8 @@ import {
 // Two players with readable IDs so log output is easy to follow. In a real
 // server these would be generated UUIDs.
 //
-const ARIA  = 'aria'  as PlayerId
-const BOWEN = 'bowen' as PlayerId
+const ARIA  = toPlayerId('aria')
+const BOWEN = toPlayerId('bowen')
 
 // ─── SEED ───────────────────────────────────────────────────────────────────
 //
@@ -62,13 +63,13 @@ const SEED = 1
 const RUNE_IDS: CardDefId[] = [
   'ogn-007-298', 'ogn-007a-298', 'ogn-042-298', 'ogn-042a-298', 'ogn-089a-298',
   'ogn-089-298', 'ogn-126a-298', 'ogn-126-298', 'ogn-166-298', 'ogn-166a-298',
-] as CardDefId[]
+].map(toCardDefId)
 
 const UNIT_POOL: CardDefId[] = [
   'ogn-001-298', 'ogs-001-024', 'unl-001-219', 'sfd-002-221', 'ogn-002-298',
   'unl-002-219', 'ogn-003-298', 'unl-003-219', 'ogs-004-024', 'unl-004-219',
   'ogs-005-024', 'unl-005-219', 'ogs-006-024', 'sfd-006-221', 'ogn-004-298',
-] as CardDefId[]
+].map(toCardDefId)
 
 function buildMainDeck(): CardDefId[] {
   const deck: CardDefId[] = []
@@ -81,17 +82,17 @@ function buildMainDeck(): CardDefId[] {
 }
 
 const ARIA_DECK: DeckConfig = {
-  legendId:    'ogs-017-024' as CardDefId,
-  championId:  'ogs-021-024' as CardDefId,
-  battlefields: ['unl-t01', 'unl-t03', 'unl-205-219'] as [CardDefId, CardDefId, CardDefId],
+  legendId:    toCardDefId('ogs-017-024'),
+  championId:  toCardDefId('ogs-021-024'),
+  battlefields: [toCardDefId('unl-t01'), toCardDefId('unl-t03'), toCardDefId('unl-205-219')],
   mainDeck:    buildMainDeck(),
   runeDeck:    RUNE_IDS,
 }
 
 const BOWEN_DECK: DeckConfig = {
-  legendId:    'ogs-019-024' as CardDefId,
-  championId:  'ogs-023-024' as CardDefId,
-  battlefields: ['unl-206-219', 'sfd-207-221', 'unl-207-219'] as [CardDefId, CardDefId, CardDefId],
+  legendId:    toCardDefId('ogs-019-024'),
+  championId:  toCardDefId('ogs-023-024'),
+  battlefields: [toCardDefId('unl-206-219'), toCardDefId('sfd-207-221'), toCardDefId('unl-207-219')],
   mainDeck:    buildMainDeck(),
   runeDeck:    RUNE_IDS,
 }
@@ -161,7 +162,7 @@ let state = createGame({
   players:  [ARIA, BOWEN],
   decks:    { [ARIA]: ARIA_DECK, [BOWEN]: BOWEN_DECK },
   seed:     SEED,
-  matchId:  'match-example-01' as MatchId,
+  matchId:  toMatchId('match-example-01'),
 })
 
 const firstPlayer  = state.activePlayerId
@@ -306,7 +307,7 @@ printBoard(state, secondPlayer, catalog)
 // by every resolver. Emitting ControlChanged sets the battlefield's controllerId,
 // which the scoring system reads during cleanup.
 //
-const bfIds     = Object.keys(state.battlefields) as BattlefieldId[]
+const bfIds     = typedObjectKeys(state.battlefields)
 const bfAria    = bfIds[0]!
 const bfBowen   = bfIds[1]!
 

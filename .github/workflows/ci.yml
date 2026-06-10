@@ -17,6 +17,7 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @thejokersthief/riftbound-protocol --filter @thejokersthief/riftbound-effect-ir --filter @thejokersthief/riftbound-card-catalog build
       - run: pnpm --filter @thejokersthief/riftbound-engine build
       - run: pnpm -r build
       - run: pnpm nx run-many --target=typecheck --all

@@ -1,8 +1,8 @@
-import type { CardId, PlayerId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
+import type { CardId, PlayerId } from '@thejokersthief/riftbound-protocol'
 import type { GameState } from '../state/types.js'
-import { computeMight, computeKeywords } from './layers.js'
-import { checkTiming, checkResources } from './timing.js'
+import { computeKeywords, computeMight } from './layers.js'
+import { checkResources, checkTiming } from './timing.js'
 
 export interface RulesQuery {
   /** Effective might of the card after all layer modifications. */

@@ -1,28 +1,37 @@
-import { describe, it, expect } from 'vitest'
+import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
 import type {
-  PlayerId,
-  CardId,
   BattlefieldId,
   CardDefId,
+  CardId,
   GameId,
   MatchId,
+  PlayerId,
 } from '@thejokersthief/riftbound-protocol'
-import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
-import type { GameState } from '../state/types.js'
+import {
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+  toPlayerId,
+  toZoneId,
+} from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it } from 'vitest'
 import { createRulesQuery } from '../rules-query/index.js'
 import { checkResources } from '../rules-query/timing.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = 'player1' as PlayerId
-const p2 = 'player2' as PlayerId
-const card1 = 'card001' as CardId
-const card2 = 'card002' as CardId
-const bf1 = 'bf001' as BattlefieldId
-const def1 = 'def001' as CardDefId
-const def2 = 'def002' as CardDefId
+const p1 = toPlayerId('player1')
+const p2 = toPlayerId('player2')
+const card1 = toCardId('card001')
+const card2 = toCardId('card002')
+const bf1 = toBattlefieldId('bf001')
+const def1 = toCardDefId('def001')
+const def2 = toCardDefId('def002')
 
 // ---------------------------------------------------------------------------
 // Card definition fixtures
@@ -75,8 +84,8 @@ const mockCatalog: CardCatalog = {
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
   return {
-    gameId: 'game1' as GameId,
-    matchId: 'match1' as MatchId,
+    gameId: toGameId('game1'),
+    matchId: toMatchId('match1'),
     playerIds: [p1, p2],
     cards: {
       [card1]: {
@@ -97,8 +106,8 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg1' as CardId,
-        championZone: 'chm1' as CardId,
+        legendZone: toCardId('leg1'),
+        championZone: toCardId('chm1'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -108,8 +117,8 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg2' as CardId,
-        championZone: 'chm2' as CardId,
+        legendZone: toCardId('leg2'),
+        championZone: toCardId('chm2'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -118,7 +127,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     battlefields: {
       [bf1]: {
         id: bf1,
-        cardId: 'bfcard1' as CardId,
+        cardId: toCardId('bfcard1'),
         controllerId: null,
         units: [],
       },
@@ -174,7 +183,7 @@ describe('mightOf', () => {
   it('returns 0 for an unknown card id', () => {
     const state = makeState()
     const query = createRulesQuery(state, mockCatalog)
-    expect(query.mightOf('unknown-card' as CardId)).toBe(0)
+    expect(query.mightOf(toCardId('unknown-card'))).toBe(0)
   })
 
   it('caches results across repeated calls', () => {
@@ -301,8 +310,8 @@ describe('canBePlayed', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg1' as CardId,
-          championZone: 'chm1' as CardId,
+          legendZone: toCardId('leg1'),
+          championZone: toCardId('chm1'),
           base: [],
           resources: { energy: 1, power: 2 }, // needs 2 energy
           points: 0,
@@ -312,8 +321,8 @@ describe('canBePlayed', () => {
           mainDeck: [],
           runeDeck: [],
           runePool: [],
-          legendZone: 'leg2' as CardId,
-          championZone: 'chm2' as CardId,
+          legendZone: toCardId('leg2'),
+          championZone: toCardId('chm2'),
           base: [],
           resources: { energy: 3, power: 2 },
           points: 0,
@@ -327,7 +336,7 @@ describe('canBePlayed', () => {
   it('returns false for an unknown card', () => {
     const state = makeState({ phase: 'Main' })
     const query = createRulesQuery(state, mockCatalog)
-    expect(query.canBePlayed('ghost-card' as CardId, p1)).toBe(false)
+    expect(query.canBePlayed(toCardId('ghost-card'), p1)).toBe(false)
   })
 })
 
@@ -340,9 +349,12 @@ describe('checkResources', () => {
     hand: [],
     mainDeck: [],
     runeDeck: [],
-    runePool: [{ filled: true, runeCardId: null }, { filled: true, runeCardId: null }],
-    legendZone: 'leg1' as CardId,
-    championZone: 'chm1' as CardId,
+    runePool: [
+      { filled: true, runeCardId: null },
+      { filled: true, runeCardId: null },
+    ],
+    legendZone: toCardId('leg1'),
+    championZone: toCardId('chm1'),
     base: [],
     resources: { energy: 5, power: 5 },
     points: 0,
@@ -353,29 +365,19 @@ describe('checkResources', () => {
   })
 
   it('returns false when power is insufficient', () => {
-    expect(
-      checkResources(
-        { energy: 1, power: 10, runes: [] },
-        richPlayer,
-      ),
-    ).toBe(false)
+    expect(checkResources({ energy: 1, power: 10, runes: [] }, richPlayer)).toBe(false)
   })
 
   it('returns false when energy is insufficient', () => {
-    expect(
-      checkResources(
-        { energy: 10, power: 1, runes: [] },
-        richPlayer,
-      ),
-    ).toBe(false)
+    expect(checkResources({ energy: 10, power: 1, runes: [] }, richPlayer)).toBe(false)
   })
 
   it('returns false when not enough filled rune slots', () => {
     expect(
       checkResources(
         { energy: 1, power: 1, runes: ['Fire', 'Fire', 'Fire'] },
-        richPlayer, // only 2 filled slots
-      ),
+        richPlayer // only 2 filled slots
+      )
     ).toBe(false)
   })
 
@@ -383,8 +385,8 @@ describe('checkResources', () => {
     expect(
       checkResources(
         { energy: 2, power: 2, runes: ['Fire', 'Water'] },
-        richPlayer, // has 2 filled slots, energy:5, power:5
-      ),
+        richPlayer // has 2 filled slots, energy:5, power:5
+      )
     ).toBe(true)
   })
 })

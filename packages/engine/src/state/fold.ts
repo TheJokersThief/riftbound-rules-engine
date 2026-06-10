@@ -1,11 +1,12 @@
-import type { GameState, CardInstance, PlayerState, BattlefieldState } from './types.js'
 import type { GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { PlayerId, CardId, BattlefieldId } from '@thejokersthief/riftbound-protocol'
+import type { BattlefieldId, CardId, PlayerId } from '@thejokersthief/riftbound-protocol'
+import { typedObjectKeys } from '@thejokersthief/riftbound-protocol'
+import type { BattlefieldState, CardInstance, GameState, PlayerState } from './types.js'
 
 function updateCard(
   state: GameState,
   cardId: CardId,
-  updater: (card: CardInstance) => CardInstance,
+  updater: (card: CardInstance) => CardInstance
 ): GameState {
   const card = state.cards[cardId]
   if (!card) return state
@@ -62,7 +63,7 @@ export function fold(state: GameState, event: GameEvent): GameState {
           [event.playerId]: {
             ...player,
             hand: [...player.hand, event.cardId],
-            mainDeck: player.mainDeck.filter(id => id !== event.cardId),
+            mainDeck: player.mainDeck.filter((id) => id !== event.cardId),
           },
         },
       }
@@ -76,32 +77,32 @@ export function fold(state: GameState, event: GameEvent): GameState {
           ...state.players,
           [event.playerId]: {
             ...player,
-            hand: player.hand.filter(id => id !== event.cardId),
+            hand: player.hand.filter((id) => id !== event.cardId),
           },
         },
       }
     }
 
     case 'CardExhausted':
-      return updateCard(state, event.cardId, card => ({ ...card, exhausted: true }))
+      return updateCard(state, event.cardId, (card) => ({ ...card, exhausted: true }))
 
     case 'CardReadied':
-      return updateCard(state, event.cardId, card => ({ ...card, exhausted: false }))
+      return updateCard(state, event.cardId, (card) => ({ ...card, exhausted: false }))
 
     case 'CardBuffed':
-      return updateCard(state, event.cardId, card => ({
+      return updateCard(state, event.cardId, (card) => ({
         ...card,
         buffAmount: card.buffAmount + event.amount,
       }))
 
     case 'MightGiven':
-      return updateCard(state, event.cardId, card => ({
+      return updateCard(state, event.cardId, (card) => ({
         ...card,
         buffAmount: card.buffAmount + event.amount,
       }))
 
     case 'KeywordGranted':
-      return updateCard(state, event.cardId, card => ({
+      return updateCard(state, event.cardId, (card) => ({
         ...card,
         keywords: [...card.keywords, event.keyword],
       }))
@@ -109,17 +110,17 @@ export function fold(state: GameState, event: GameEvent): GameState {
     case 'CardKilled': {
       const killedId = event.cardId
       const battlefields = { ...state.battlefields } as Record<BattlefieldId, BattlefieldState>
-      for (const bfId of Object.keys(battlefields) as BattlefieldId[]) {
+      for (const bfId of typedObjectKeys(battlefields)) {
         const bf = battlefields[bfId]!
         if (bf.units.includes(killedId)) {
-          battlefields[bfId] = { ...bf, units: bf.units.filter(id => id !== killedId) }
+          battlefields[bfId] = { ...bf, units: bf.units.filter((id) => id !== killedId) }
         }
       }
       const players = { ...state.players } as Record<PlayerId, PlayerState>
-      for (const pid of Object.keys(players) as PlayerId[]) {
+      for (const pid of typedObjectKeys(players)) {
         const p = players[pid]!
         if (p.base.includes(killedId)) {
-          players[pid] = { ...p, base: p.base.filter(id => id !== killedId) }
+          players[pid] = { ...p, base: p.base.filter((id) => id !== killedId) }
         }
       }
       return { ...state, battlefields, players }
@@ -166,10 +167,10 @@ export function fold(state: GameState, event: GameEvent): GameState {
     }
 
     case 'XPGained':
-      return updateCard(state, event.cardId, card => ({ ...card, xp: card.xp + event.amount }))
+      return updateCard(state, event.cardId, (card) => ({ ...card, xp: card.xp + event.amount }))
 
     case 'XPSpent':
-      return updateCard(state, event.cardId, card => ({ ...card, xp: card.xp - event.amount }))
+      return updateCard(state, event.cardId, (card) => ({ ...card, xp: card.xp - event.amount }))
 
     case 'GameEnded':
       return { ...state, status: 'ended', winner: event.winner }

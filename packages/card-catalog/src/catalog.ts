@@ -1,7 +1,7 @@
 import type { CardDefId } from '@thejokersthief/riftbound-protocol'
+import type { CardDataSource } from './source.js'
 import type { CardDefinition } from './types.js'
 import { CardDefinitionSchema } from './types.js'
-import type { CardDataSource } from './source.js'
 
 export interface CardCatalog {
   get(id: CardDefId): CardDefinition

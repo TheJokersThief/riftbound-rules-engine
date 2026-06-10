@@ -1,11 +1,11 @@
-import type { CardId, PlayerId, GameEvent } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { EffectProgram, TriggerEvent } from '@thejokersthief/riftbound-effect-ir'
-import type { GameState, TriggeredAbilityTask } from '../state/types.js'
-import type { RulesQuery } from '../rules-query/index.js'
-import type { EffectFrame } from '../state/stack.js'
+import type { CardId, GameEvent, PlayerId } from '@thejokersthief/riftbound-protocol'
 import { step } from '../interpreter/index.js'
 import { evalCondition } from '../interpreter/selectors.js'
+import type { RulesQuery } from '../rules-query/index.js'
+import type { EffectFrame } from '../state/stack.js'
+import type { GameState, TriggeredAbilityTask } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // Helpers — active card IDs
@@ -41,7 +41,7 @@ function eventMatchesTrigger(
   trigger: TriggerEvent,
   event: GameEvent,
   cardId: CardId,
-  state: GameState,
+  state: GameState
 ): boolean {
   const card = state.cards[cardId]
   const cardOwner = card?.ownerId
@@ -100,19 +100,18 @@ export function collectTriggers(
   events: GameEvent[],
   programs: ReadonlyMap<string, EffectProgram>,
   catalog: CardCatalog,
-  query: RulesQuery,
+  query: RulesQuery
 ): GameState {
   if (events.length === 0 || programs.size === 0) return state
 
   const [activePlayer, opponentPlayer] = state.playerIds
-  const orderedPlayers: PlayerId[] = opponentPlayer !== undefined
-    ? [activePlayer!, opponentPlayer]
-    : [activePlayer!]
+  const orderedPlayers: PlayerId[] =
+    opponentPlayer !== undefined ? [activePlayer!, opponentPlayer] : [activePlayer!]
 
   const newTasks: TriggeredAbilityTask[] = []
 
   for (const playerId of orderedPlayers) {
-    const activeCardIds = getActiveCardIds(state).filter(id => {
+    const activeCardIds = getActiveCardIds(state).filter((id) => {
       const card = state.cards[id]
       return card?.ownerId === playerId
     })
@@ -159,7 +158,7 @@ export function drainHot(
   state: GameState,
   query: RulesQuery,
   catalog: CardCatalog,
-  programs: ReadonlyMap<string, EffectProgram>,
+  programs: ReadonlyMap<string, EffectProgram>
 ): { state: GameState; events: GameEvent[] } {
   const allEvents: GameEvent[] = []
 
@@ -176,9 +175,8 @@ export function drainHot(
     const ability = program.abilities[task.abilityIndex]
     if (!ability || ability.type !== 'Triggered') continue
 
-    const effectNodes = ability.effect.type === 'Sequence'
-      ? ability.effect.effects
-      : [ability.effect]
+    const effectNodes =
+      ability.effect.type === 'Sequence' ? ability.effect.effects : [ability.effect]
 
     const frame: EffectFrame = {
       type: 'Effect',
@@ -194,7 +192,8 @@ export function drainHot(
     while (
       stepResult.state.pendingDecision === null &&
       stepResult.state.resolutionStack.length > 0 &&
-      stepResult.state.resolutionStack[stepResult.state.resolutionStack.length - 1]?.type === 'Effect'
+      stepResult.state.resolutionStack[stepResult.state.resolutionStack.length - 1]?.type ===
+        'Effect'
     ) {
       allEvents.push(...stepResult.events)
       state = stepResult.state

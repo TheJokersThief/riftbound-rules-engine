@@ -1,35 +1,39 @@
-import { describe, it, expect } from 'vitest'
+import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
+import type { EffectNode, SelectorNode } from '@thejokersthief/riftbound-effect-ir'
 import type {
-  PlayerId,
-  CardId,
   BattlefieldId,
   CardDefId,
+  CardId,
   GameId,
   MatchId,
+  PlayerId,
 } from '@thejokersthief/riftbound-protocol'
-import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
-import type { GameState } from '../state/types.js'
-import type { EffectFrame } from '../state/stack.js'
-import type { EffectNode, SelectorNode } from '@thejokersthief/riftbound-effect-ir'
-import { createRulesQuery } from '../rules-query/index.js'
 import {
-  step,
-  resolveSelector,
-  evalCondition,
-  evalNumberExpr,
-} from '../interpreter/index.js'
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+  toPlayerId,
+  toZoneId,
+} from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it } from 'vitest'
+import { evalCondition, evalNumberExpr, resolveSelector, step } from '../interpreter/index.js'
+import { createRulesQuery } from '../rules-query/index.js'
+import type { EffectFrame } from '../state/stack.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = 'player1' as PlayerId
-const p2 = 'player2' as PlayerId
-const card1 = 'card001' as CardId
-const card2 = 'card002' as CardId
-const bf1 = 'bf001' as BattlefieldId
-const def1 = 'def001' as CardDefId
-const def2 = 'def002' as CardDefId
+const p1 = toPlayerId('player1')
+const p2 = toPlayerId('player2')
+const card1 = toCardId('card001')
+const card2 = toCardId('card002')
+const bf1 = toBattlefieldId('bf001')
+const def1 = toCardDefId('def001')
+const def2 = toCardDefId('def002')
 
 // ---------------------------------------------------------------------------
 // Card definition fixtures
@@ -82,8 +86,8 @@ const mockCatalog: CardCatalog = {
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
   return {
-    gameId: 'game1' as GameId,
-    matchId: 'match1' as MatchId,
+    gameId: toGameId('game1'),
+    matchId: toMatchId('match1'),
     playerIds: [p1, p2],
     cards: {
       [card1]: {
@@ -101,11 +105,11 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     players: {
       [p1]: {
         hand: [],
-        mainDeck: ['deckCard1' as CardId, 'deckCard2' as CardId],
+        mainDeck: [toCardId('deckCard1'), toCardId('deckCard2')],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg1' as CardId,
-        championZone: 'chm1' as CardId,
+        legendZone: toCardId('leg1'),
+        championZone: toCardId('chm1'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -115,8 +119,8 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: 'leg2' as CardId,
-        championZone: 'chm2' as CardId,
+        legendZone: toCardId('leg2'),
+        championZone: toCardId('chm2'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -125,7 +129,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     battlefields: {
       [bf1]: {
         id: bf1,
-        cardId: 'bfcard1' as CardId,
+        cardId: toCardId('bfcard1'),
         controllerId: null,
         units: [card1],
       },
@@ -374,7 +378,7 @@ describe('resolveSelector()', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card1, card2],
         },
@@ -423,7 +427,7 @@ describe('resolveSelector()', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card1, card2],
         },
@@ -499,7 +503,7 @@ describe('evalCondition()', () => {
     expect(evalCondition({ type: 'IsMyTurn' }, state, card1, query, mockCatalog)).toBe(true)
   })
 
-  it('returns false for IsMyTurn when it is not the source owner\'s turn', () => {
+  it("returns false for IsMyTurn when it is not the source owner's turn", () => {
     const state = makeState({ activePlayerId: p2 })
     const query = createRulesQuery(state, mockCatalog)
     expect(evalCondition({ type: 'IsMyTurn' }, state, card1, query, mockCatalog)).toBe(false)
@@ -543,7 +547,7 @@ describe('evalCondition()', () => {
     const state = makeState({ phase: 'Main' })
     const query = createRulesQuery(state, mockCatalog)
     expect(
-      evalCondition({ type: 'IsPhase', phase: 'Main' }, state, card1, query, mockCatalog),
+      evalCondition({ type: 'IsPhase', phase: 'Main' }, state, card1, query, mockCatalog)
     ).toBe(true)
   })
 

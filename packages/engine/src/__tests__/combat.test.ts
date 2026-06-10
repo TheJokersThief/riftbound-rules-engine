@@ -1,39 +1,40 @@
-import { describe, it, expect } from 'vitest'
-import type {
-  PlayerId,
-  CardId,
-  BattlefieldId,
-  CardDefId,
-  GameId,
-  MatchId,
-} from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
-import type { GameState } from '../state/types.js'
-import { createRulesQuery } from '../rules-query/index.js'
+import type { CardDefId, CardId, PlayerId } from '@thejokersthief/riftbound-protocol'
 import {
-  computeDamagePool,
-  buildDefaultAssignments,
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+  toPlayerId,
+} from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it } from 'vitest'
+import {
   applyDamageAssignments,
-  resolveDeaths,
-  resolveControl,
+  buildDefaultAssignments,
+  computeDamagePool,
   resolveCombat,
+  resolveControl,
+  resolveDeaths,
 } from '../combat/index.js'
+import { createRulesQuery } from '../rules-query/index.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = 'player1' as PlayerId
-const p2 = 'player2' as PlayerId
-const card1 = 'card001' as CardId   // p1 attacker, might 3
-const card2 = 'card002' as CardId   // p2 defender, might 2
-const card3 = 'card003' as CardId   // p2 tank defender, might 1
-const card4 = 'card004' as CardId   // p1 attacker, might 2
-const bf1 = 'bf001' as BattlefieldId
-const def1 = 'def001' as CardDefId   // might 3, no keywords
-const def2 = 'def002' as CardDefId   // might 2, no keywords
-const def3 = 'def003' as CardDefId   // might 1, Tank keyword
-const def4 = 'def004' as CardDefId   // might 2, no keywords
+const p1 = toPlayerId('player1')
+const p2 = toPlayerId('player2')
+const card1 = toCardId('card001') // p1 attacker, might 3
+const card2 = toCardId('card002') // p2 defender, might 2
+const card3 = toCardId('card003') // p2 tank defender, might 1
+const card4 = toCardId('card004') // p1 attacker, might 2
+const bf1 = toBattlefieldId('bf001')
+const def1 = toCardDefId('def001') // might 3, no keywords
+const def2 = toCardDefId('def002') // might 2, no keywords
+const def3 = toCardDefId('def003') // might 1, Tank keyword
+const def4 = toCardDefId('def004') // might 2, no keywords
 
 // ---------------------------------------------------------------------------
 // Card definition fixtures
@@ -112,7 +113,12 @@ const mockCatalog: CardCatalog = {
 // State factory
 // ---------------------------------------------------------------------------
 
-function makeCardInstance(id: CardId, defId: CardDefId, ownerId: PlayerId, extraKeywords: string[] = []) {
+function makeCardInstance(
+  id: CardId,
+  defId: CardDefId,
+  ownerId: PlayerId,
+  extraKeywords: string[] = []
+) {
   return {
     id,
     defId,
@@ -132,8 +138,8 @@ function makePlayerState(extra: Partial<{ legendZone: CardId; championZone: Card
     mainDeck: [],
     runeDeck: [],
     runePool: [],
-    legendZone: (extra.legendZone ?? 'leg-placeholder') as CardId,
-    championZone: (extra.championZone ?? 'chm-placeholder') as CardId,
+    legendZone: extra.legendZone ?? toCardId('leg-placeholder'),
+    championZone: extra.championZone ?? toCardId('chm-placeholder'),
     base: [],
     resources: { energy: 3, power: 2 },
     points: 0,
@@ -142,8 +148,8 @@ function makePlayerState(extra: Partial<{ legendZone: CardId; championZone: Card
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
   return {
-    gameId: 'game1' as GameId,
-    matchId: 'match1' as MatchId,
+    gameId: toGameId('game1'),
+    matchId: toMatchId('match1'),
     playerIds: [p1, p2],
     cards: {
       [card1]: makeCardInstance(card1, def1, p1),
@@ -152,13 +158,13 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
       [card4]: makeCardInstance(card4, def4, p1),
     },
     players: {
-      [p1]: makePlayerState({ legendZone: 'leg1' as CardId, championZone: 'chm1' as CardId }),
-      [p2]: makePlayerState({ legendZone: 'leg2' as CardId, championZone: 'chm2' as CardId }),
+      [p1]: makePlayerState({ legendZone: toCardId('leg1'), championZone: toCardId('chm1') }),
+      [p2]: makePlayerState({ legendZone: toCardId('leg2'), championZone: toCardId('chm2') }),
     },
     battlefields: {
       [bf1]: {
         id: bf1,
-        cardId: 'bfcard1' as CardId,
+        cardId: toCardId('bfcard1'),
         controllerId: null,
         units: [card1, card2],
       },
@@ -190,7 +196,7 @@ describe('computeDamagePool', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card1, card2], // card1 is p1, card2 is p2
         },
@@ -207,7 +213,7 @@ describe('computeDamagePool', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [],
         },
@@ -271,9 +277,7 @@ describe('buildDefaultAssignments', () => {
 describe('applyDamageAssignments', () => {
   it('emits DamageDealt events for each assignment', () => {
     const state = makeState()
-    const assignments = [
-      { attackerId: card1, targetId: card2, amount: 3 },
-    ]
+    const assignments = [{ attackerId: card1, targetId: card2, amount: 3 }]
     const result = applyDamageAssignments(state, assignments)
     expect(result.events).toHaveLength(1)
     expect(result.events[0]).toMatchObject({
@@ -287,9 +291,7 @@ describe('applyDamageAssignments', () => {
 
   it('folds each event into state and returns updated state', () => {
     const state = makeState()
-    const assignments = [
-      { attackerId: card1, targetId: card2, amount: 3 },
-    ]
+    const assignments = [{ attackerId: card1, targetId: card2, amount: 3 }]
     const result = applyDamageAssignments(state, assignments)
     // DamageDealt is a no-op fold, so state should be same reference shape but stable
     expect(result.state).toBeDefined()
@@ -320,7 +322,7 @@ describe('resolveDeaths', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card1, card2],
         },
@@ -329,7 +331,7 @@ describe('resolveDeaths', () => {
     const query = createRulesQuery(state, mockCatalog)
     const damageDealt = new Map<CardId, number>([[card2, 2]])
     const result = resolveDeaths(state, damageDealt, query)
-    const killedEvents = result.events.filter(e => e.type === 'CardKilled')
+    const killedEvents = result.events.filter((e) => e.type === 'CardKilled')
     expect(killedEvents).toHaveLength(1)
     expect(killedEvents[0]).toMatchObject({ type: 'CardKilled', cardId: card2 })
     // card2 should be removed from the battlefield units
@@ -342,7 +344,7 @@ describe('resolveDeaths', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card1, card2],
         },
@@ -351,7 +353,7 @@ describe('resolveDeaths', () => {
     const query = createRulesQuery(state, mockCatalog)
     const damageDealt = new Map<CardId, number>([[card2, 1]])
     const result = resolveDeaths(state, damageDealt, query)
-    const killedEvents = result.events.filter(e => e.type === 'CardKilled')
+    const killedEvents = result.events.filter((e) => e.type === 'CardKilled')
     expect(killedEvents).toHaveLength(0)
     expect(result.state.battlefields[bf1]?.units).toContain(card2)
   })
@@ -361,7 +363,7 @@ describe('resolveDeaths', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card1, card2],
         },
@@ -370,7 +372,7 @@ describe('resolveDeaths', () => {
     const query = createRulesQuery(state, mockCatalog)
     const damageDealt = new Map<CardId, number>([[card2, 2]])
     const result = resolveDeaths(state, damageDealt, query)
-    const movedEvents = result.events.filter(e => e.type === 'CardMoved')
+    const movedEvents = result.events.filter((e) => e.type === 'CardMoved')
     expect(movedEvents).toHaveLength(1)
     expect(movedEvents[0]).toMatchObject({
       type: 'CardMoved',
@@ -390,7 +392,7 @@ describe('resolveControl', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card1], // only p1's card
         },
@@ -412,7 +414,7 @@ describe('resolveControl', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card1, card2], // p1 and p2 units
         },
@@ -428,7 +430,7 @@ describe('resolveControl', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card2], // only p2's card
         },
@@ -451,7 +453,7 @@ describe('resolveCombat', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [card1, card2],
         },
@@ -460,14 +462,14 @@ describe('resolveCombat', () => {
     const query = createRulesQuery(state, mockCatalog)
     const result = resolveCombat(state, bf1, query, mockCatalog)
 
-    const damageEvents = result.events.filter(e => e.type === 'DamageDealt')
+    const damageEvents = result.events.filter((e) => e.type === 'DamageDealt')
     expect(damageEvents).toHaveLength(1)
 
-    const killedEvents = result.events.filter(e => e.type === 'CardKilled')
+    const killedEvents = result.events.filter((e) => e.type === 'CardKilled')
     expect(killedEvents).toHaveLength(1)
     expect(killedEvents[0]).toMatchObject({ cardId: card2 })
 
-    const controlEvents = result.events.filter(e => e.type === 'ControlChanged')
+    const controlEvents = result.events.filter((e) => e.type === 'ControlChanged')
     expect(controlEvents).toHaveLength(1)
     expect(controlEvents[0]).toMatchObject({
       type: 'ControlChanged',
@@ -481,7 +483,7 @@ describe('resolveCombat', () => {
       battlefields: {
         [bf1]: {
           id: bf1,
-          cardId: 'bfcard1' as CardId,
+          cardId: toCardId('bfcard1'),
           controllerId: null,
           units: [],
         },

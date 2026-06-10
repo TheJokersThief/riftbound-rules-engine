@@ -1,4 +1,4 @@
-import type { EffectProgram, AbilityNode, EffectNode } from '@thejokersthief/riftbound-effect-ir'
+import type { AbilityNode, EffectNode, EffectProgram } from '@thejokersthief/riftbound-effect-ir'
 
 export function decompile(program: EffectProgram): string {
   if (program.type === 'Unparsed') return ''

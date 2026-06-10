@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { FilterNodeSchema, SelectorNodeSchema, type SelectorNode } from './selectors.js'
+import { FilterNodeSchema, type SelectorNode, SelectorNodeSchema } from './selectors.js'
 
 export const RuneSymbolSchema = z.enum(['action', 'reaction', 'any'])
 export type RuneSymbol = z.infer<typeof RuneSymbolSchema>

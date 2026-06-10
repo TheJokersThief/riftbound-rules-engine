@@ -1,26 +1,35 @@
-import { describe, it, expect } from 'vitest'
+import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
 import type {
-  PlayerId,
-  CardId,
   BattlefieldId,
   CardDefId,
+  CardId,
   GameId,
   MatchId,
+  PlayerId,
 } from '@thejokersthief/riftbound-protocol'
-import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
-import type { GameState } from '../state/types.js'
-import { createGame, submit, legalActions, serialize, deserialize } from '../index.js'
+import {
+  toBattlefieldId,
+  toCardDefId,
+  toCardId,
+  toGameId,
+  toMatchId,
+  toPlayerId,
+  toZoneId,
+} from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it } from 'vitest'
+import { createGame, deserialize, legalActions, serialize, submit } from '../index.js'
 import type { DeckConfig } from '../index.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = 'player1' as PlayerId
-const p2 = 'player2' as PlayerId
-const bf1 = 'bf001' as BattlefieldId
-const def1 = 'def001' as CardDefId
-const def2 = 'def002' as CardDefId
+const p1 = toPlayerId('player1')
+const p2 = toPlayerId('player2')
+const bf1 = toBattlefieldId('bf001')
+const def1 = toCardDefId('def001')
+const def2 = toCardDefId('def002')
 
 // ---------------------------------------------------------------------------
 // Card catalog fixture
@@ -87,10 +96,10 @@ function makeValidDeck(): DeckConfig {
 // ---------------------------------------------------------------------------
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
-  const cardId = 'card001' as CardId
+  const cardId = toCardId('card001')
   return {
-    gameId: 'game1' as GameId,
-    matchId: 'match1' as MatchId,
+    gameId: toGameId('game1'),
+    matchId: toMatchId('match1'),
     playerIds: [p1, p2],
     cards: {
       [cardId]: {
@@ -111,8 +120,8 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         mainDeck: [],
         runeDeck: [],
         runePool: Array.from({ length: 10 }, () => ({ filled: false, runeCardId: null })),
-        legendZone: 'leg1' as CardId,
-        championZone: 'chm1' as CardId,
+        legendZone: toCardId('leg1'),
+        championZone: toCardId('chm1'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -122,8 +131,8 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         mainDeck: [],
         runeDeck: [],
         runePool: Array.from({ length: 10 }, () => ({ filled: false, runeCardId: null })),
-        legendZone: 'leg2' as CardId,
-        championZone: 'chm2' as CardId,
+        legendZone: toCardId('leg2'),
+        championZone: toCardId('chm2'),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -132,7 +141,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     battlefields: {
       [bf1]: {
         id: bf1,
-        cardId: 'bfcard1' as CardId,
+        cardId: toCardId('bfcard1'),
         controllerId: null,
         units: [],
       },
@@ -161,79 +170,91 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
 describe('createGame()', () => {
   it('returns a GameState with status=setup', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const state = createGame({ players: [p1, p2], decks, seed: 42, matchId: 'match1' as MatchId })
+    const state = createGame({ players: [p1, p2], decks, seed: 42, matchId: toMatchId('match1') })
     expect(state.status).toBe('setup')
   })
 
   it('returns correct playerIds', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const state = createGame({ players: [p1, p2], decks, seed: 42, matchId: 'match1' as MatchId })
+    const state = createGame({ players: [p1, p2], decks, seed: 42, matchId: toMatchId('match1') })
     expect(state.playerIds).toEqual([p1, p2])
   })
 
   it('throws on mainDeck too short (< 40)', () => {
-    const badDeck: DeckConfig = { ...makeValidDeck(), mainDeck: Array.from({ length: 39 }, () => def1) }
+    const badDeck: DeckConfig = {
+      ...makeValidDeck(),
+      mainDeck: Array.from({ length: 39 }, () => def1),
+    }
     const decks = { [p1]: badDeck, [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    expect(() => createGame({ players: [p1, p2], decks, seed: 1, matchId: 'match1' as MatchId })).toThrow(
-      /mainDeck must have 40/,
-    )
+    expect(() =>
+      createGame({ players: [p1, p2], decks, seed: 1, matchId: toMatchId('match1') })
+    ).toThrow(/mainDeck must have 40/)
   })
 
   it('throws on mainDeck too long (> 60)', () => {
-    const badDeck: DeckConfig = { ...makeValidDeck(), mainDeck: Array.from({ length: 61 }, () => def1) }
+    const badDeck: DeckConfig = {
+      ...makeValidDeck(),
+      mainDeck: Array.from({ length: 61 }, () => def1),
+    }
     const decks = { [p1]: badDeck, [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    expect(() => createGame({ players: [p1, p2], decks, seed: 1, matchId: 'match1' as MatchId })).toThrow(
-      /mainDeck must have 40/,
-    )
+    expect(() =>
+      createGame({ players: [p1, p2], decks, seed: 1, matchId: toMatchId('match1') })
+    ).toThrow(/mainDeck must have 40/)
   })
 
   it('throws when runeDeck length is not 10', () => {
-    const badDeck: DeckConfig = { ...makeValidDeck(), runeDeck: Array.from({ length: 9 }, () => def2) }
+    const badDeck: DeckConfig = {
+      ...makeValidDeck(),
+      runeDeck: Array.from({ length: 9 }, () => def2),
+    }
     const decks = { [p1]: badDeck, [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    expect(() => createGame({ players: [p1, p2], decks, seed: 1, matchId: 'match1' as MatchId })).toThrow(
-      /runeDeck must have exactly 10/,
-    )
+    expect(() =>
+      createGame({ players: [p1, p2], decks, seed: 1, matchId: toMatchId('match1') })
+    ).toThrow(/runeDeck must have exactly 10/)
   })
 
   it('throws when battlefields length is not 3', () => {
-    const badDeck = { ...makeValidDeck(), battlefields: [def1, def1] as unknown as [CardDefId, CardDefId, CardDefId] }
+    const badDeck = {
+      ...makeValidDeck(),
+      battlefields: [def1, def1] as unknown as [CardDefId, CardDefId, CardDefId],
+    }
     const decks = { [p1]: badDeck, [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    expect(() => createGame({ players: [p1, p2], decks, seed: 1, matchId: 'match1' as MatchId })).toThrow(
-      /battlefields must have exactly 3/,
-    )
+    expect(() =>
+      createGame({ players: [p1, p2], decks, seed: 1, matchId: toMatchId('match1') })
+    ).toThrow(/battlefields must have exactly 3/)
   })
 
   it('sets pendingDecision to ChooseMulligan at start', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const state = createGame({ players: [p1, p2], decks, seed: 42, matchId: 'match1' as MatchId })
+    const state = createGame({ players: [p1, p2], decks, seed: 42, matchId: toMatchId('match1') })
     expect(state.pendingDecision).not.toBeNull()
     expect(state.pendingDecision?.type).toBe('ChooseMulligan')
   })
 
   it('deals 5 cards to each player', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const state = createGame({ players: [p1, p2], decks, seed: 99, matchId: 'match1' as MatchId })
+    const state = createGame({ players: [p1, p2], decks, seed: 99, matchId: toMatchId('match1') })
     expect(state.players[p1]?.hand).toHaveLength(5)
     expect(state.players[p2]?.hand).toHaveLength(5)
   })
 
   it('has 10 rune slots per player (all empty)', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const state = createGame({ players: [p1, p2], decks, seed: 1, matchId: 'match1' as MatchId })
+    const state = createGame({ players: [p1, p2], decks, seed: 1, matchId: toMatchId('match1') })
     expect(state.players[p1]?.runePool).toHaveLength(10)
-    expect(state.players[p1]?.runePool.every(slot => !slot.filled)).toBe(true)
+    expect(state.players[p1]?.runePool.every((slot) => !slot.filled)).toBe(true)
   })
 
   it('creates battlefields for both players', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const state = createGame({ players: [p1, p2], decks, seed: 7, matchId: 'match1' as MatchId })
+    const state = createGame({ players: [p1, p2], decks, seed: 7, matchId: toMatchId('match1') })
     const bfs = Object.values(state.battlefields)
     expect(bfs.length).toBeGreaterThanOrEqual(2)
   })
 
   it('stores the matchId', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const state = createGame({ players: [p1, p2], decks, seed: 5, matchId: 'my-match' as MatchId })
+    const state = createGame({ players: [p1, p2], decks, seed: 5, matchId: toMatchId('my-match') })
     expect(state.matchId).toBe('my-match')
   })
 })
@@ -245,18 +266,36 @@ describe('createGame()', () => {
 describe('submit()', () => {
   it('KeepHand transitions status from setup to playing', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const setupState = createGame({ players: [p1, p2], decks, seed: 1, matchId: 'match1' as MatchId })
+    const setupState = createGame({
+      players: [p1, p2],
+      decks,
+      seed: 1,
+      matchId: toMatchId('match1'),
+    })
     const firstPlayer = setupState.activePlayerId
-    const { state: newState } = submit(setupState, { type: 'KeepHand', playerId: firstPlayer }, mockCatalog)
+    const { state: newState } = submit(
+      setupState,
+      { type: 'KeepHand', playerId: firstPlayer },
+      mockCatalog
+    )
     expect(newState.status).toBe('playing')
     expect(newState.pendingDecision).toBeNull()
   })
 
   it('Mulligan reshuffles hand and transitions to playing', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const setupState = createGame({ players: [p1, p2], decks, seed: 1, matchId: 'match1' as MatchId })
+    const setupState = createGame({
+      players: [p1, p2],
+      decks,
+      seed: 1,
+      matchId: toMatchId('match1'),
+    })
     const firstPlayer = setupState.activePlayerId
-    const { state: newState } = submit(setupState, { type: 'Mulligan', playerId: firstPlayer }, mockCatalog)
+    const { state: newState } = submit(
+      setupState,
+      { type: 'Mulligan', playerId: firstPlayer },
+      mockCatalog
+    )
     expect(newState.status).toBe('playing')
     expect(newState.pendingDecision).toBeNull()
     // Hand should still have 5 cards after mulligan
@@ -273,21 +312,25 @@ describe('submit()', () => {
   it('throws when game is ended', () => {
     const state = makeState({ status: 'ended' })
     expect(() => submit(state, { type: 'EndTurn', playerId: p1 }, mockCatalog)).toThrow(
-      /Cannot submit action to an ended game/,
+      /Cannot submit action to an ended game/
     )
   })
 
   it('throws when playerId is unknown', () => {
     const state = makeState()
-    const unknownPlayer = 'stranger' as PlayerId
+    const unknownPlayer = toPlayerId('stranger')
     expect(() => submit(state, { type: 'EndTurn', playerId: unknownPlayer }, mockCatalog)).toThrow(
-      /Unknown player/,
+      /Unknown player/
     )
   })
 
   it('PassPriority calls advance (returns state)', () => {
     const state = makeState()
-    const { state: newState, events } = submit(state, { type: 'PassPriority', playerId: p1 }, mockCatalog)
+    const { state: newState, events } = submit(
+      state,
+      { type: 'PassPriority', playerId: p1 },
+      mockCatalog
+    )
     // advance is a no-op when stack is empty and no pending decision
     expect(newState).toBeDefined()
     expect(events).toBeInstanceOf(Array)
@@ -305,7 +348,7 @@ describe('legalActions()', () => {
       pendingDecision: { type: 'ChooseMulligan', playerId: p1, handSize: 5 },
     })
     const actions = legalActions(state, p1, mockCatalog)
-    const types = actions.map(a => a.type)
+    const types = actions.map((a) => a.type)
     expect(types).toContain('KeepHand')
     expect(types).toContain('Mulligan')
   })
@@ -321,7 +364,7 @@ describe('legalActions()', () => {
   it('returns EndTurn when in Main phase with no chain and player is active', () => {
     const state = makeState({ phase: 'Main', activePlayerId: p1 })
     const actions = legalActions(state, p1, mockCatalog)
-    const types = actions.map(a => a.type)
+    const types = actions.map((a) => a.type)
     expect(types).toContain('EndTurn')
   })
 
@@ -334,7 +377,7 @@ describe('legalActions()', () => {
   it('returns PassPriority during Main phase for active player', () => {
     const state = makeState({ phase: 'Main', activePlayerId: p1 })
     const actions = legalActions(state, p1, mockCatalog)
-    const types = actions.map(a => a.type)
+    const types = actions.map((a) => a.type)
     expect(types).toContain('PassPriority')
   })
 
@@ -345,7 +388,7 @@ describe('legalActions()', () => {
     })
     const actions = legalActions(state, p1, mockCatalog)
     expect(actions).toHaveLength(2)
-    const choices = actions.map(a => (a as { choice?: boolean }).choice)
+    const choices = actions.map((a) => (a as { choice?: boolean }).choice)
     expect(choices).toContain(true)
     expect(choices).toContain(false)
   })
@@ -356,9 +399,9 @@ describe('legalActions()', () => {
     })
     const actions = legalActions(state, p1, mockCatalog)
     // PassPriority is always available
-    expect(actions.some(a => a.type === 'PassPriority')).toBe(true)
+    expect(actions.some((a) => a.type === 'PassPriority')).toBe(true)
     // p1 has a Unit (def1, cost energy:2/power:1) in hand with sufficient resources during Main phase
-    expect(actions.some(a => a.type === 'PlayCard')).toBe(true)
+    expect(actions.some((a) => a.type === 'PlayCard')).toBe(true)
   })
 })
 
@@ -369,7 +412,7 @@ describe('legalActions()', () => {
 describe('serialize() / deserialize()', () => {
   it('round-trips a GameState without data loss', () => {
     const decks = { [p1]: makeValidDeck(), [p2]: makeValidDeck() } as Record<PlayerId, DeckConfig>
-    const state = createGame({ players: [p1, p2], decks, seed: 77, matchId: 'match-rt' as MatchId })
+    const state = createGame({ players: [p1, p2], decks, seed: 77, matchId: toMatchId('match-rt') })
     const serialized = serialize(state)
     const restored = deserialize(serialized)
     expect(restored.gameId).toBe(state.gameId)

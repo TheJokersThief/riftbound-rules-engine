@@ -1,4 +1,10 @@
-import type { AbilityNode, EffectNode, SelectorNode, TriggerEvent, CostNode } from '@thejokersthief/riftbound-effect-ir'
+import type {
+  AbilityNode,
+  CostNode,
+  EffectNode,
+  SelectorNode,
+  TriggerEvent,
+} from '@thejokersthief/riftbound-effect-ir'
 
 export class ParseError extends Error {
   constructor(message: string) {
@@ -33,41 +39,153 @@ function sel(text: string): SelectorNode | null {
   if (t === 'me' || t === 'myself') return SELF
 
   if (/^all enemy units? at a battlefield$/.test(t))
-    return { scope: 'Enemy', objectType: 'Unit', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'All' }, chooser: 'None' }
+    return {
+      scope: 'Enemy',
+      objectType: 'Unit',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'All' },
+      chooser: 'None',
+    }
   if (/^all friendly units? at a battlefield$/.test(t))
-    return { scope: 'Friendly', objectType: 'Unit', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'All' }, chooser: 'None' }
+    return {
+      scope: 'Friendly',
+      objectType: 'Unit',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'All' },
+      chooser: 'None',
+    }
   if (/^all units? at a battlefield$/.test(t))
-    return { scope: 'Any', objectType: 'Unit', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'All' }, chooser: 'None' }
+    return {
+      scope: 'Any',
+      objectType: 'Unit',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'All' },
+      chooser: 'None',
+    }
   if (/^all enemy units? here$/.test(t))
-    return { scope: 'Enemy', objectType: 'Unit', location: { type: 'Here' }, filters: [], quantity: { type: 'All' }, chooser: 'None' }
+    return {
+      scope: 'Enemy',
+      objectType: 'Unit',
+      location: { type: 'Here' },
+      filters: [],
+      quantity: { type: 'All' },
+      chooser: 'None',
+    }
   if (/^all friendly units? here$/.test(t))
-    return { scope: 'Friendly', objectType: 'Unit', location: { type: 'Here' }, filters: [], quantity: { type: 'All' }, chooser: 'None' }
+    return {
+      scope: 'Friendly',
+      objectType: 'Unit',
+      location: { type: 'Here' },
+      filters: [],
+      quantity: { type: 'All' },
+      chooser: 'None',
+    }
   if (/^all units? here$/.test(t))
-    return { scope: 'Any', objectType: 'Unit', location: { type: 'Here' }, filters: [], quantity: { type: 'All' }, chooser: 'None' }
+    return {
+      scope: 'Any',
+      objectType: 'Unit',
+      location: { type: 'Here' },
+      filters: [],
+      quantity: { type: 'All' },
+      chooser: 'None',
+    }
 
   if (/^an? enemy units? at a battlefield$/.test(t))
-    return { scope: 'Enemy', objectType: 'Unit', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Enemy',
+      objectType: 'Unit',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
   if (/^an? friendly units? at a battlefield$/.test(t))
-    return { scope: 'Friendly', objectType: 'Unit', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Friendly',
+      objectType: 'Unit',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
   if (/^an? units? at a battlefield$/.test(t))
-    return { scope: 'Any', objectType: 'Unit', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Any',
+      objectType: 'Unit',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
 
   if (/^an? enemy units? here$/.test(t))
-    return { scope: 'Enemy', objectType: 'Unit', location: { type: 'Here' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Enemy',
+      objectType: 'Unit',
+      location: { type: 'Here' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
   if (/^an? friendly units? here$/.test(t))
-    return { scope: 'Friendly', objectType: 'Unit', location: { type: 'Here' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Friendly',
+      objectType: 'Unit',
+      location: { type: 'Here' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
   if (/^an? units? here$/.test(t))
-    return { scope: 'Any', objectType: 'Unit', location: { type: 'Here' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Any',
+      objectType: 'Unit',
+      location: { type: 'Here' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
 
   if (/^an? enemy units?$/.test(t))
-    return { scope: 'Enemy', objectType: 'Unit', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Enemy',
+      objectType: 'Unit',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
   if (/^an? friendly units?$/.test(t))
-    return { scope: 'Friendly', objectType: 'Unit', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Friendly',
+      objectType: 'Unit',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
   if (/^an? units?$/.test(t))
-    return { scope: 'Any', objectType: 'Unit', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Any',
+      objectType: 'Unit',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
 
   if (/^an? gears?(?:\s+at a battlefield)?$/.test(t))
-    return { scope: 'Any', objectType: 'Gear', location: { type: 'AtBattlefields' }, filters: [], quantity: { type: 'One' }, chooser: 'You' }
+    return {
+      scope: 'Any',
+      objectType: 'Gear',
+      location: { type: 'AtBattlefields' },
+      filters: [],
+      quantity: { type: 'One' },
+      chooser: 'You',
+    }
 
   return null
 }
@@ -78,27 +196,31 @@ function eff(text: string): EffectNode | null {
   const dealM = t.match(/^[Dd]eal\s+(\d+)\s+to\s+(.+)$/)
   if (dealM !== null) {
     const target = sel(dealM[2] ?? '')
-    if (target !== null) return { type: 'Deal', targets: target, amount: parseInt(dealM[1] ?? '0', 10) }
+    if (target !== null)
+      return { type: 'Deal', targets: target, amount: Number.parseInt(dealM[1] ?? '0', 10) }
   }
 
   const gmM = t.match(/^[Gg]ive\s+(.+?)\s+\+(\d+)\s+\[MIGHT\](?:\s+this\s+turn)?$/)
   if (gmM !== null) {
     const target = sel(gmM[1] ?? '')
-    if (target !== null) return { type: 'GiveMight', targets: target, amount: parseInt(gmM[2] ?? '0', 10) }
+    if (target !== null)
+      return { type: 'GiveMight', targets: target, amount: Number.parseInt(gmM[2] ?? '0', 10) }
   }
 
   const gkM = t.match(/^[Gg]ive\s+(.+?)\s+\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+this\s+turn$/)
   if (gkM !== null) {
     const target = sel(gkM[1] ?? '')
-    if (target !== null) return { type: 'GrantKeyword', targets: target, keyword: (gkM[2] ?? '').trim() }
+    if (target !== null)
+      return { type: 'GrantKeyword', targets: target, keyword: (gkM[2] ?? '').trim() }
   }
 
   const drawM = t.match(/^[Dd]raw\s+(\d+)$/)
-  if (drawM !== null) return { type: 'Draw', player: 'You', count: parseInt(drawM[1] ?? '0', 10) }
+  if (drawM !== null)
+    return { type: 'Draw', player: 'You', count: Number.parseInt(drawM[1] ?? '0', 10) }
 
   const discardM = t.match(/^[Dd]iscard\s+(\d+)$/)
   if (discardM !== null) {
-    const n = parseInt(discardM[1] ?? '1', 10)
+    const n = Number.parseInt(discardM[1] ?? '1', 10)
     return {
       type: 'Discard',
       targets: {
@@ -132,10 +254,17 @@ function eff(text: string): EffectNode | null {
   }
 
   const addEM = t.match(/^\[Add\]\s+\[E(\d+)\]$/)
-  if (addEM !== null) return { type: 'AddResource', player: 'You', energy: parseInt(addEM[1] ?? '0', 10), power: 0 }
+  if (addEM !== null)
+    return {
+      type: 'AddResource',
+      player: 'You',
+      energy: Number.parseInt(addEM[1] ?? '0', 10),
+      power: 0,
+    }
 
   const xpM = t.match(/^[Gg]ain\s+(\d+)\s+XP$/)
-  if (xpM !== null) return { type: 'GainXP', targets: SELF, amount: parseInt(xpM[1] ?? '0', 10) }
+  if (xpM !== null)
+    return { type: 'GainXP', targets: SELF, amount: Number.parseInt(xpM[1] ?? '0', 10) }
 
   return null
 }
@@ -145,27 +274,60 @@ function keyword(s: string): AbilityNode | null {
 
   const kwDash = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s*[—–]\s*.+$/)
   if (kwDash !== null) {
-    return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwDash[1] ?? '').trim() } }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: (kwDash[1] ?? '').trim() },
+    }
   }
 
   if (/^\[Level \d+\]\[>\]/.test(t)) {
-    return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'Level' } }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: 'Level' },
+    }
   }
 
   const kwER = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+\[E\d+\]\[RUNE:[a-z]+\]$/)
-  if (kwER !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwER[1] ?? '').trim() } }
+  if (kwER !== null)
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: (kwER[1] ?? '').trim() },
+    }
 
   const kwRE = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+\[RUNE:[a-z]+\]\[E\d+\]$/)
-  if (kwRE !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwRE[1] ?? '').trim() } }
+  if (kwRE !== null)
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: (kwRE[1] ?? '').trim() },
+    }
 
   const kwE = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+\[E\d+\]$/)
-  if (kwE !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwE[1] ?? '').trim() } }
+  if (kwE !== null)
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: (kwE[1] ?? '').trim() },
+    }
 
   const kwR = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+\[RUNE:[a-z]+\]$/)
-  if (kwR !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwR[1] ?? '').trim() } }
+  if (kwR !== null)
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: (kwR[1] ?? '').trim() },
+    }
 
   const pureKw = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]$/)
-  if (pureKw !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (pureKw[1] ?? '').trim() } }
+  if (pureKw !== null)
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: (pureKw[1] ?? '').trim() },
+    }
 
   return null
 }
@@ -181,7 +343,10 @@ function activated(s: string): AbilityNode | null {
 
   const exh2 = t.match(/^\[E(\d+)\],\s*\[EXHAUST\]:\s*(.+)$/)
   if (exh2 !== null) {
-    const costs: CostNode[] = [{ type: 'Energy', amount: parseInt(exh2[1] ?? '0', 10) }, { type: 'Exhaust' }]
+    const costs: CostNode[] = [
+      { type: 'Energy', amount: Number.parseInt(exh2[1] ?? '0', 10) },
+      { type: 'Exhaust' },
+    ]
     const effect = eff(exh2[2] ?? '') ?? DUMMY
     return { type: 'Activated', cost: costs, timing: 'Anytime', effect }
   }
@@ -199,7 +364,12 @@ function activated(s: string): AbilityNode | null {
       type: 'Activated',
       cost: [{ type: 'Exhaust' }],
       timing: 'Chain',
-      effect: { type: 'AddResource', player: 'You', energy: parseInt(rxn[1] ?? '0', 10), power: 0 },
+      effect: {
+        type: 'AddResource',
+        player: 'You',
+        energy: Number.parseInt(rxn[1] ?? '0', 10),
+        power: 0,
+      },
     }
   }
 
@@ -237,10 +407,8 @@ function detectTrigger(s: string): { event: TriggerEvent; afterComma: string } |
     return { event: { type: 'AtStartOfTurn' }, afterComma: afterFirstComma() }
   if (/^At (?:the )?end of\b/i.test(t))
     return { event: { type: 'AtEndOfTurn' }, afterComma: afterFirstComma() }
-  if (/^When\b/i.test(t))
-    return { event: { type: 'WhenPlayed' }, afterComma: afterFirstComma() }
-  if (/^At\b/i.test(t))
-    return { event: { type: 'AtStartOfTurn' }, afterComma: afterFirstComma() }
+  if (/^When\b/i.test(t)) return { event: { type: 'WhenPlayed' }, afterComma: afterFirstComma() }
+  if (/^At\b/i.test(t)) return { event: { type: 'AtStartOfTurn' }, afterComma: afterFirstComma() }
 
   return null
 }
@@ -253,16 +421,32 @@ function parseSentence(sentence: string): AbilityNode {
   if (kw !== null) return kw
 
   if (/^I enter ready$/i.test(s)) {
-    return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: { type: 'Ready', targets: SELF } }
+    return {
+      type: 'Triggered',
+      event: { type: 'WhenPlayed' },
+      effect: { type: 'Ready', targets: SELF },
+    }
   }
 
   if (/^[Ff]riendly units enter ready this turn$/i.test(s)) {
-    return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: { type: 'Ready', targets: ALL_FRIENDLY } }
+    return {
+      type: 'Triggered',
+      event: { type: 'WhenPlayed' },
+      effect: { type: 'Ready', targets: ALL_FRIENDLY },
+    }
   }
 
   const spellDmgM = s.match(/^Your spells and abilities deal\s+(\d+)\s+Bonus Damage$/i)
   if (spellDmgM !== null) {
-    return { type: 'Static', layer: 3, modification: { type: 'ModifySpellDamage', player: 'You', amount: parseInt(spellDmgM[1] ?? '0', 10) } }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: {
+        type: 'ModifySpellDamage',
+        player: 'You',
+        amount: Number.parseInt(spellDmgM[1] ?? '0', 10),
+      },
+    }
   }
 
   const act = activated(s)
@@ -276,22 +460,43 @@ function parseSentence(sentence: string): AbilityNode {
   }
 
   const directEff = eff(s)
-  if (directEff !== null) return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: directEff }
+  if (directEff !== null)
+    return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: directEff }
 
   if (/^(If|While|As long as)\b/i.test(s)) {
-    return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'Conditional' } }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: 'Conditional' },
+    }
   }
 
   if (/^I\b/.test(s)) {
     const mightM = s.match(/I have \+(\d+) \[MIGHT\]/i)
     if (mightM !== null) {
-      return { type: 'Static', layer: 3, modification: { type: 'ModifyMight', targets: SELF, amount: parseInt(mightM[1] ?? '0', 10) } }
+      return {
+        type: 'Static',
+        layer: 3,
+        modification: {
+          type: 'ModifyMight',
+          targets: SELF,
+          amount: Number.parseInt(mightM[1] ?? '0', 10),
+        },
+      }
     }
-    return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'Restriction' } }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: 'Restriction' },
+    }
   }
 
   if (/^This\b/i.test(s)) {
-    return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'Restriction' } }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: 'Restriction' },
+    }
   }
 
   if (/^You\b/i.test(s) || /^Your\b/i.test(s)) {
@@ -301,14 +506,35 @@ function parseSentence(sentence: string): AbilityNode {
   if (/^(Friendly|Other)\b/i.test(s)) {
     const mightM = s.match(/have \+(\d+) \[MIGHT\]/i)
     if (mightM !== null) {
-      return { type: 'Static', layer: 3, modification: { type: 'ModifyMight', targets: ALL_FRIENDLY, amount: parseInt(mightM[1] ?? '0', 10) } }
+      return {
+        type: 'Static',
+        layer: 3,
+        modification: {
+          type: 'ModifyMight',
+          targets: ALL_FRIENDLY,
+          amount: Number.parseInt(mightM[1] ?? '0', 10),
+        },
+      }
     }
-    if (/enter ready/i.test(s)) return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: { type: 'Ready', targets: ALL_FRIENDLY } }
-    return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'StaticModifier' } }
+    if (/enter ready/i.test(s))
+      return {
+        type: 'Triggered',
+        event: { type: 'WhenPlayed' },
+        effect: { type: 'Ready', targets: ALL_FRIENDLY },
+      }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: 'StaticModifier' },
+    }
   }
 
   if (/^(Use|Spend)\b/i.test(s)) {
-    return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'Restriction' } }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: 'Restriction' },
+    }
   }
 
   if (/^(Then|Its|Their|They|It|Otherwise)\b/i.test(s)) {
@@ -323,12 +549,20 @@ function parseSentence(sentence: string): AbilityNode {
     return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: DUMMY }
   }
 
-  if (/^(Play|Give|Deal|Draw|Discard|Kill|Buff|Ready|Move|Counter|Banish|Recycle|Reveal|Gain|Channel|Look|Choose|Reduce|Score|Sacrifice|Return|Stun|Exhaust|Recall|Attach|Equip|Transform|Replace|Add|Copy|Shuffle)\b/i.test(s)) {
+  if (
+    /^(Play|Give|Deal|Draw|Discard|Kill|Buff|Ready|Move|Counter|Banish|Recycle|Reveal|Gain|Channel|Look|Choose|Reduce|Score|Sacrifice|Return|Stun|Exhaust|Recall|Attach|Equip|Transform|Replace|Add|Copy|Shuffle)\b/i.test(
+      s
+    )
+  ) {
     return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: DUMMY }
   }
 
   if (/^(Units|Enemy|Allied|Spells|Cards|Equipment|Each|All)\b/i.test(s)) {
-    return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'StaticModifier' } }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: 'StaticModifier' },
+    }
   }
 
   if (/^(Optional|Choose one)\b/i.test(s)) {
@@ -340,7 +574,11 @@ function parseSentence(sentence: string): AbilityNode {
   }
 
   if (s.length > 1) {
-    return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'Unknown' } }
+    return {
+      type: 'Static',
+      layer: 3,
+      modification: { type: 'AddKeyword', targets: SELF, keyword: 'Unknown' },
+    }
   }
 
   throw new ParseError(`cannot parse: "${s}"`)

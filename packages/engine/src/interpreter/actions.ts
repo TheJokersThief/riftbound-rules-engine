@@ -1,12 +1,13 @@
-import type { CardId, ZoneId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { ActionNode } from '@thejokersthief/riftbound-effect-ir'
+import type { CardId, ZoneId } from '@thejokersthief/riftbound-protocol'
+import { toCardId, toZoneId } from '@thejokersthief/riftbound-protocol'
 import type { GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { GameState } from '../state/types.js'
-import type { EffectFrame } from '../state/stack.js'
 import type { RulesQuery } from '../rules-query/index.js'
 import { fold } from '../state/fold.js'
-import { resolveSelector, evalNumberExpr, resolvePlayerRef } from './selectors.js'
+import type { EffectFrame } from '../state/stack.js'
+import type { GameState } from '../state/types.js'
+import { evalNumberExpr, resolvePlayerRef, resolveSelector } from './selectors.js'
 
 // ---------------------------------------------------------------------------
 // Helper: find which zone a card currently lives in (best-effort)
@@ -15,16 +16,16 @@ import { resolveSelector, evalNumberExpr, resolvePlayerRef } from './selectors.j
 function currentZoneOfCard(state: GameState, cardId: CardId): ZoneId {
   for (const bf of Object.values(state.battlefields)) {
     if (!bf) continue
-    if (bf.units.includes(cardId)) return 'battlefield' as ZoneId
+    if (bf.units.includes(cardId)) return toZoneId('battlefield')
   }
   for (const player of Object.values(state.players)) {
     if (!player) continue
-    if (player.hand.includes(cardId)) return 'hand' as ZoneId
-    if (player.mainDeck.includes(cardId)) return 'mainDeck' as ZoneId
-    if (player.base.includes(cardId)) return 'base' as ZoneId
-    if (player.runeDeck.includes(cardId)) return 'runeDeck' as ZoneId
+    if (player.hand.includes(cardId)) return toZoneId('hand')
+    if (player.mainDeck.includes(cardId)) return toZoneId('mainDeck')
+    if (player.base.includes(cardId)) return toZoneId('base')
+    if (player.runeDeck.includes(cardId)) return toZoneId('runeDeck')
   }
-  return 'unknown' as ZoneId
+  return toZoneId('unknown')
 }
 
 // ---------------------------------------------------------------------------
@@ -36,7 +37,7 @@ export function executeAction(
   frame: EffectFrame,
   state: GameState,
   query: RulesQuery,
-  catalog: CardCatalog,
+  catalog: CardCatalog
 ): { state: GameState; events: GameEvent[] } {
   switch (node.type) {
     case 'Deal': {
@@ -94,7 +95,7 @@ export function executeAction(
       let s = state
       for (const cardId of targets) {
         const fromZone = currentZoneOfCard(s, cardId)
-        const toZone = node.toZone as ZoneId
+        const toZone = toZoneId(node.toZone)
         const event: GameEvent = { type: 'CardMoved', cardId, fromZone, toZone }
         events.push(event)
         s = fold(s, event)
@@ -193,9 +194,9 @@ export function executeAction(
       const count = evalNumberExpr(node.count, state, frame.sourceId, query, catalog)
       const events: GameEvent[] = []
       let s = state
-      const zoneId = node.zone as ZoneId
+      const zoneId = toZoneId(node.zone)
       for (let i = 0; i < count; i++) {
-        const cardId = `tok_${Math.random().toString(36).slice(2, 9)}` as CardId
+        const cardId = toCardId(`tok_${Math.random().toString(36).slice(2, 9)}`)
         const event: GameEvent = { type: 'TokenCreated', cardId, defId: node.defId, zoneId }
         events.push(event)
         s = fold(s, event)

@@ -1,7 +1,7 @@
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { GameState, MatchState } from '@thejokersthief/riftbound-engine'
-import type { PlayerId } from '@thejokersthief/riftbound-protocol'
 import { createMatchEngine } from '@thejokersthief/riftbound-engine'
+import { toPlayerId } from '@thejokersthief/riftbound-protocol'
 import { buildMatch } from './fixtures.js'
 
 export const FUZZ_ITERATIONS = 100
@@ -11,8 +11,8 @@ export type FuzzResult = {
   states: GameState[]
 }
 
-const FUZZ_PLAYER_1 = 'p1' as PlayerId
-const FUZZ_PLAYER_2 = 'p2' as PlayerId
+const FUZZ_PLAYER_1 = toPlayerId('p1')
+const FUZZ_PLAYER_2 = toPlayerId('p2')
 
 function pickRandom(seed: number, max: number): number {
   // Simple deterministic pick using mulberry32-inspired hash
@@ -21,11 +21,7 @@ function pickRandom(seed: number, max: number): number {
   return Math.abs(t) % max
 }
 
-export function playFuzzGame(
-  seed: number,
-  catalog: CardCatalog,
-  maxActions: number,
-): FuzzResult {
+export function playFuzzGame(seed: number, catalog: CardCatalog, maxActions: number): FuzzResult {
   const matchEngine = createMatchEngine(catalog)
   let matchState = buildMatch({ players: [FUZZ_PLAYER_1, FUZZ_PLAYER_2], seed, catalog })
   const states: GameState[] = [matchState.currentGame]
@@ -33,8 +29,7 @@ export function playFuzzGame(
   for (let i = 0; i < maxActions; i++) {
     if (matchState.status === 'ended') break
     const activeId =
-      matchState.currentGame.pendingDecision?.playerId ??
-      matchState.currentGame.activePlayerId
+      matchState.currentGame.pendingDecision?.playerId ?? matchState.currentGame.activePlayerId
     const actions = matchEngine.legalMatchActions(matchState, activeId)
     if (actions.length === 0) break
     const actionIndex = pickRandom(seed + i, actions.length)

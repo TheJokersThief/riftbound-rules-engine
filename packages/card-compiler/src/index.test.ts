@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest'
-import { normalize } from './pipeline/normalizer.js'
-import { segment } from './pipeline/segmenter.js'
-import { parse, ParseError } from './pipeline/parser.js'
+import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
+import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
+import type { CardDefId } from '@thejokersthief/riftbound-protocol'
+import { describe, expect, it } from 'vitest'
 import { createCompiler } from './compiler.js'
 import { decompile } from './decompiler.js'
 import type { FallbackRegistry } from './fallbacks/index.js'
-import type { CardDefinition, CardCatalog } from '@thejokersthief/riftbound-card-catalog'
-import type { CardDefId } from '@thejokersthief/riftbound-protocol'
-import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
+import { normalize } from './pipeline/normalizer.js'
+import { ParseError, parse } from './pipeline/parser.js'
+import { segment } from './pipeline/segmenter.js'
 
 // ---------------------------------------------------------------------------
 // normalizer
@@ -173,7 +173,7 @@ describe('compileAll', () => {
 
     expect(result.coverageReport.total).toBe(2)
     expect(result.coverageReport.unparsed).toBe(1) // only the empty-text card
-    expect(result.coverageReport.parsed).toBe(1)   // "When played, draw a card." parses
+    expect(result.coverageReport.parsed).toBe(1) // "When played, draw a card." parses
     expect(result.coverageReport.fallback).toBe(0)
     expect(result.parseRate).toBe(0.5) // 1 parsed / (1 parsed + 1 unparsed)
     expect(result.cards).toHaveLength(2)

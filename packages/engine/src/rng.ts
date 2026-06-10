@@ -8,7 +8,7 @@ export function nextRng(state: { seed: number }): { value: number; next: { seed:
 
 export function nextInt(
   state: { seed: number },
-  max: number,
+  max: number
 ): { value: number; next: { seed: number } } {
   const { value, next } = nextRng(state)
   return { value: Math.floor(value * max), next }
@@ -16,7 +16,7 @@ export function nextInt(
 
 export function shuffle<T>(
   arr: readonly T[],
-  rng: { seed: number },
+  rng: { seed: number }
 ): { result: T[]; next: { seed: number } } {
   const result = [...arr]
   let current = rng

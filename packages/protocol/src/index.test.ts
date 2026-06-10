@@ -23,7 +23,11 @@ describe('ActionSchema', () => {
 
 describe('GameEventSchema', () => {
   it('accepts a valid GameStarted event', () => {
-    const result = GameEventSchema.safeParse({ type: 'GameStarted', gameId: 'g1', playerIds: ['p1', 'p2'] })
+    const result = GameEventSchema.safeParse({
+      type: 'GameStarted',
+      gameId: 'g1',
+      playerIds: ['p1', 'p2'],
+    })
     expect(result.success).toBe(true)
   })
 })
@@ -47,7 +51,11 @@ describe('DecisionRequestSchema', () => {
   })
 
   it('accepts a valid ChooseMulligan decision', () => {
-    const result = DecisionRequestSchema.safeParse({ type: 'ChooseMulligan', playerId: 'p1', handSize: 5 })
+    const result = DecisionRequestSchema.safeParse({
+      type: 'ChooseMulligan',
+      playerId: 'p1',
+      handSize: 5,
+    })
     expect(result.success).toBe(true)
   })
 })

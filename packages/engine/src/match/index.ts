@@ -1,4 +1,12 @@
-import type { PlayerId, Action, PlayerView, GameEvent, MatchId, CardDefId } from '@thejokersthief/riftbound-protocol'
+import type {
+  Action,
+  CardDefId,
+  GameEvent,
+  MatchId,
+  PlayerId,
+  PlayerView,
+} from '@thejokersthief/riftbound-protocol'
+import { toMatchId } from '@thejokersthief/riftbound-protocol'
 import type { GameState } from '../state/types.js'
 import type { DeckConfig, MatchState } from './state.js'
 
@@ -21,7 +29,7 @@ export function createMatch(
     decks: Record<PlayerId, DeckConfig>
     seed: number
   },
-  engine: GameEngineFunctions,
+  engine: GameEngineFunctions
 ): MatchState {
   const gameState = engine.createGame({
     players: config.players,
@@ -29,21 +37,21 @@ export function createMatch(
     seed: config.seed,
   })
   return {
-    matchId: `match-${config.seed}` as MatchId,
+    matchId: toMatchId(`match-${config.seed}`),
     playerIds: config.players,
     decks: config.decks,
     gameWins: { [config.players[0]]: 0, [config.players[1]]: 0 } as Record<PlayerId, number>,
-    usedBattlefields: { [config.players[0]]: [], [config.players[1]]: [] } as Record<PlayerId, CardDefId[]>,
+    usedBattlefields: { [config.players[0]]: [], [config.players[1]]: [] } as Record<
+      PlayerId,
+      CardDefId[]
+    >,
     currentGame: gameState,
     status: 'playing',
     winner: null,
   }
 }
 
-function handleGameEnd(
-  matchState: MatchState,
-  _engine: GameEngineFunctions,
-): MatchState {
+function handleGameEnd(matchState: MatchState, _engine: GameEngineFunctions): MatchState {
   const winner = matchState.currentGame.winner
   if (winner === null) return matchState
 
@@ -69,7 +77,7 @@ function handleGameEnd(
 export function submitToMatch(
   matchState: MatchState,
   action: Action,
-  engine: GameEngineFunctions,
+  engine: GameEngineFunctions
 ): { matchState: MatchState; events: GameEvent[] } {
   const { state: newGame, events } = engine.submit(matchState.currentGame, action)
   let updated: MatchState = { ...matchState, currentGame: newGame }
@@ -84,7 +92,7 @@ export function submitToMatch(
 export function legalMatchActions(
   matchState: MatchState,
   playerId: PlayerId,
-  engine: GameEngineFunctions,
+  engine: GameEngineFunctions
 ): Action[] {
   if (matchState.status === 'ended') return []
   return engine.legalActions(matchState.currentGame, playerId)
@@ -93,7 +101,7 @@ export function legalMatchActions(
 export function viewForMatch(
   matchState: MatchState,
   playerId: PlayerId,
-  engine: GameEngineFunctions,
+  engine: GameEngineFunctions
 ): PlayerView {
   return engine.viewFor(matchState.currentGame, playerId)
 }

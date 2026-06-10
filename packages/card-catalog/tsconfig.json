@@ -7,5 +7,6 @@
   "references": [
     { "path": "../protocol" }
   ],
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["dist"]
 }

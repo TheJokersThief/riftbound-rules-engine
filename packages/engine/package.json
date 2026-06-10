@@ -15,7 +15,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "oxlint ./src",
-    "format": "biome format --check ./src",
+    "format": "biome check --linter-enabled=false ./src",
     "test": "vitest run"
   },
   "dependencies": {
@@ -27,6 +27,7 @@
   "devDependencies": {
     "@biomejs/biome": "*",
     "@thejokersthief/riftbound-test-helpers": "workspace:*",
+    "@types/node": "^25.9.2",
     "oxlint": "*",
     "typescript": "*",
     "vitest": "*"

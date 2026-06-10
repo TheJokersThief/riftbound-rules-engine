@@ -1,8 +1,8 @@
-import type { GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { PlayerId, BattlefieldId, CardId } from '@thejokersthief/riftbound-protocol'
-import type { GameState } from '../state/types.js'
+import type { BattlefieldId, CardId, GameEvent, PlayerId } from '@thejokersthief/riftbound-protocol'
+import { typedObjectKeys } from '@thejokersthief/riftbound-protocol'
 import type { RulesQuery } from '../rules-query/index.js'
 import { fold } from '../state/fold.js'
+import type { GameState } from '../state/types.js'
 
 // ---------------------------------------------------------------------------
 // attemptScore
@@ -12,7 +12,7 @@ export function attemptScore(
   state: GameState,
   playerId: PlayerId,
   method: 'Hold' | 'Conquer',
-  battlefieldId: BattlefieldId,
+  battlefieldId: BattlefieldId
 ): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
 
@@ -20,9 +20,9 @@ export function attemptScore(
   if (!player) return { state, events }
 
   if (method === 'Conquer' && player.points >= 7) {
-    const allBattlefieldIds = Object.keys(state.battlefields) as BattlefieldId[]
+    const allBattlefieldIds = typedObjectKeys(state.battlefields)
     const scoredIds = state.scoredThisTurn[playerId] ?? []
-    const allScored = allBattlefieldIds.every(bfId => scoredIds.includes(bfId))
+    const allScored = allBattlefieldIds.every((bfId) => scoredIds.includes(bfId))
 
     if (!allScored) {
       const drawPlayer = state.players[playerId]!
@@ -62,7 +62,7 @@ export function attemptScore(
 export function checkScoring(
   state: GameState,
   playerId: PlayerId,
-  _query: RulesQuery,
+  _query: RulesQuery
 ): { state: GameState; events: GameEvent[] } {
   const allEvents: GameEvent[] = []
 
@@ -74,12 +74,9 @@ export function checkScoring(
     }
   }
 
-  const allBfIds = Object.keys(state.battlefields) as BattlefieldId[]
+  const allBfIds = typedObjectKeys(state.battlefields)
   for (const bfId of allBfIds) {
-    if (
-      state.battlefields[bfId]?.controllerId === playerId &&
-      !state.holdEligible.includes(bfId)
-    ) {
+    if (state.battlefields[bfId]?.controllerId === playerId && !state.holdEligible.includes(bfId)) {
       const result = attemptScore(state, playerId, 'Conquer', bfId)
       state = result.state
       allEvents.push(...result.events)

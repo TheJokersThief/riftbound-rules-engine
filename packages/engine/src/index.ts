@@ -1,28 +1,28 @@
-import type {
-  PlayerId,
-  CardId,
-  CardDefId,
-  BattlefieldId,
-  GameId,
-  MatchId,
-  Action,
-  GameEvent,
-} from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
-import type { GameState, CardInstance, PlayerState, BattlefieldState } from './state/types.js'
-import type { DeckConfig, MatchState } from './match/state.js'
-import type { GameEngineFunctions } from './match/index.js'
-import { nextInt, shuffle } from './rng.js'
-import { fold } from './state/fold.js'
-import { createRulesQuery } from './rules-query/index.js'
+import type {
+  Action,
+  BattlefieldId,
+  CardDefId,
+  CardId,
+  GameEvent,
+  MatchId,
+  PlayerId,
+} from '@thejokersthief/riftbound-protocol'
+import { toBattlefieldId, toCardId, toGameId, toMatchId } from '@thejokersthief/riftbound-protocol'
 import { advance } from './chain/index.js'
-import { advanceTurn } from './turn/index.js'
+import type { GameEngineFunctions } from './match/index.js'
 import {
   createMatch as _createMatch,
-  submitToMatch as _submitToMatch,
   legalMatchActions as _legalMatchActions,
+  submitToMatch as _submitToMatch,
   viewForMatch as _viewForMatch,
 } from './match/index.js'
+import type { DeckConfig, MatchState } from './match/state.js'
+import { nextInt, shuffle } from './rng.js'
+import { createRulesQuery } from './rules-query/index.js'
+import { fold } from './state/fold.js'
+import type { BattlefieldState, CardInstance, GameState, PlayerState } from './state/types.js'
+import { advanceTurn } from './turn/index.js'
 import { viewFor as _viewFor } from './visibility/index.js'
 
 // ---------------------------------------------------------------------------
@@ -62,17 +62,17 @@ export function createGame(config: {
     if (!deck) throw new Error(`Missing deck for player ${playerId}`)
     if (deck.mainDeck.length < 40 || deck.mainDeck.length > 60) {
       throw new Error(
-        `Player ${playerId} mainDeck must have 40–60 cards, got ${deck.mainDeck.length}`,
+        `Player ${playerId} mainDeck must have 40–60 cards, got ${deck.mainDeck.length}`
       )
     }
     if (deck.runeDeck.length !== 10) {
       throw new Error(
-        `Player ${playerId} runeDeck must have exactly 10 cards, got ${deck.runeDeck.length}`,
+        `Player ${playerId} runeDeck must have exactly 10 cards, got ${deck.runeDeck.length}`
       )
     }
     if (deck.battlefields.length !== 3) {
       throw new Error(
-        `Player ${playerId} battlefields must have exactly 3, got ${deck.battlefields.length}`,
+        `Player ${playerId} battlefields must have exactly 3, got ${deck.battlefields.length}`
       )
     }
   }
@@ -81,7 +81,7 @@ export function createGame(config: {
   let cardCounter = 0
 
   function makeCardId(): CardId {
-    return `card-${config.seed}-${cardCounter++}` as CardId
+    return toCardId(`card-${config.seed}-${cardCounter++}`)
   }
 
   function makeCard(defId: CardDefId, ownerId: PlayerId): CardInstance {
@@ -110,13 +110,13 @@ export function createGame(config: {
   function buildPlayerCards(playerId: PlayerId): PlayerCards {
     const deck = config.decks[playerId]!
 
-    const mainDeckIds: CardId[] = deck.mainDeck.map(defId => {
+    const mainDeckIds: CardId[] = deck.mainDeck.map((defId) => {
       const card = makeCard(defId, playerId)
       allCards[card.id] = card
       return card.id
     })
 
-    const runeDeckIds: CardId[] = deck.runeDeck.map(defId => {
+    const runeDeckIds: CardId[] = deck.runeDeck.map((defId) => {
       const card = makeCard(defId, playerId)
       allCards[card.id] = card
       return card.id
@@ -161,8 +161,8 @@ export function createGame(config: {
   const p2Hand = p2ShuffledDeck.slice(0, 5)
   const p2Deck = p2ShuffledDeck.slice(5)
 
-  const p1BfId = `bf-${p1}` as BattlefieldId
-  const p2BfId = `bf-${p2}` as BattlefieldId
+  const p1BfId = toBattlefieldId(`bf-${p1}`)
+  const p2BfId = toBattlefieldId(`bf-${p2}`)
 
   const p1BfDefId = config.decks[p1]!.battlefields[0]!
   const p2BfDefId = config.decks[p2]!.battlefields[0]!
@@ -174,9 +174,9 @@ export function createGame(config: {
   allCards[p2BfCard.id] = p2BfCard
 
   const state: GameState = {
-    gameId: `game-${config.seed}` as GameId,
+    gameId: toGameId(`game-${config.seed}`),
     matchId: config.matchId,
-    playerIds: config.players as [PlayerId, PlayerId],
+    playerIds: [p1, p2],
     cards: allCards,
     players: {
       [p1]: {
@@ -235,7 +235,7 @@ export function createGame(config: {
 export function submit(
   state: GameState,
   action: Action,
-  catalog: CardCatalog,
+  catalog: CardCatalog
 ): { state: GameState; events: GameEvent[] } {
   if (!state.playerIds.includes(action.playerId)) {
     throw new Error(`Unknown player ${action.playerId}`)
@@ -252,7 +252,8 @@ export function submit(
 
       case 'Mulligan': {
         const player = state.players[action.playerId]
-        if (!player) return { state: { ...state, pendingDecision: null, status: 'playing' }, events: [] }
+        if (!player)
+          return { state: { ...state, pendingDecision: null, status: 'playing' }, events: [] }
 
         const newDeck = [...player.hand, ...player.mainDeck]
         const shuffled = shuffle(newDeck, state.rng)
@@ -333,7 +334,7 @@ export function submit(
 function getPlayableCards(
   state: GameState,
   playerId: PlayerId,
-  query: ReturnType<typeof createRulesQuery>,
+  query: ReturnType<typeof createRulesQuery>
 ): Action[] {
   const player = state.players[playerId]
   if (!player) return []
@@ -350,11 +351,7 @@ function getPlayableCards(
 // legalActions
 // ---------------------------------------------------------------------------
 
-export function legalActions(
-  state: GameState,
-  playerId: PlayerId,
-  catalog: CardCatalog,
-): Action[] {
+export function legalActions(state: GameState, playerId: PlayerId, catalog: CardCatalog): Action[] {
   if (state.pendingDecision !== null) {
     if (state.pendingDecision.playerId !== playerId) return []
 
@@ -393,12 +390,13 @@ export function legalActions(
       case 'ChooseBattlefield':
         // ChooseBattlefield decision.options is CardId[], but the action takes cardDefId (CardDefId)
         // For v1 we emit a stub — the decision carries the available option card ids
-        return decision.options.map(cardId => {
+        return decision.options.map((cardId) => {
           const inst = state.cards[cardId]
+          if (!inst) throw new Error(`Unknown card in ChooseBattlefield: ${cardId}`)
           return {
             type: 'ChooseBattlefield' as const,
             playerId,
-            cardDefId: inst?.defId ?? (cardId as unknown as CardDefId),
+            cardDefId: inst.defId,
           }
         })
 
@@ -450,8 +448,7 @@ export function legalActions(
 
 export function createMatchEngine(catalog: CardCatalog) {
   const engine: GameEngineFunctions = {
-    createGame: (config) =>
-      createGame({ ...config, matchId: 'match-0' as MatchId }),
+    createGame: (config) => createGame({ ...config, matchId: toMatchId('match-0') }),
     submit: (state, action) => submit(state, action, catalog),
     legalActions: (state, playerId) => legalActions(state, playerId, catalog),
     viewFor: (state, playerId) => _viewFor(state, playerId, catalog),

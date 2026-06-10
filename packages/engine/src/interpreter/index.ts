@@ -1,14 +1,14 @@
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
-import type { ActionNode } from '@thejokersthief/riftbound-effect-ir'
+import type { ActionNode, EffectNode } from '@thejokersthief/riftbound-effect-ir'
 import type { GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { GameState } from '../state/types.js'
-import type { EffectFrame } from '../state/stack.js'
 import type { RulesQuery } from '../rules-query/index.js'
+import type { EffectFrame } from '../state/stack.js'
+import type { GameState } from '../state/types.js'
 import { executeAction } from './actions.js'
 import { dispatchNode } from './nodes.js'
 
 // ---------------------------------------------------------------------------
-// Action type discriminator set
+// Action type discriminator set + type predicate
 // ---------------------------------------------------------------------------
 
 const ACTION_TYPES = new Set([
@@ -35,6 +35,10 @@ const ACTION_TYPES = new Set([
   'TakeExtraTurn',
 ])
 
+function isActionNode(node: EffectNode): node is ActionNode {
+  return ACTION_TYPES.has(node.type)
+}
+
 // ---------------------------------------------------------------------------
 // step — advance the resolution stack by one node
 // ---------------------------------------------------------------------------
@@ -42,7 +46,7 @@ const ACTION_TYPES = new Set([
 export function step(
   state: GameState,
   query: RulesQuery,
-  catalog: CardCatalog,
+  catalog: CardCatalog
 ): { state: GameState; events: GameEvent[] } {
   const stack = state.resolutionStack
   if (stack.length === 0) return { state, events: [] }
@@ -54,7 +58,7 @@ export function step(
     return { state, events: [] }
   }
 
-  const frame = topFrame as EffectFrame
+  const frame = topFrame
 
   if (frame.remaining.length === 0) {
     // Pop the exhausted frame
@@ -69,8 +73,8 @@ export function step(
   const stackWithUpdated = [...stack.slice(0, -1), updatedFrame]
   const stateWithUpdatedFrame: GameState = { ...state, resolutionStack: stackWithUpdated }
 
-  if (ACTION_TYPES.has(headNode.type)) {
-    return executeAction(headNode as ActionNode, updatedFrame, stateWithUpdatedFrame, query, catalog)
+  if (isActionNode(headNode)) {
+    return executeAction(headNode, updatedFrame, stateWithUpdatedFrame, query, catalog)
   }
 
   return dispatchNode(headNode, updatedFrame, stateWithUpdatedFrame, query, catalog)

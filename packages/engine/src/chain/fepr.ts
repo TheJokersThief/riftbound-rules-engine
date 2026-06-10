@@ -1,12 +1,12 @@
-import type { GameEvent } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
-import type { GameState } from '../state/types.js'
-import type { RulesQuery } from '../rules-query/index.js'
-import type { EffectFrame } from '../state/stack.js'
+import type { GameEvent } from '@thejokersthief/riftbound-protocol'
 import { step } from '../interpreter/index.js'
-import { drainHot } from './hot.js'
+import type { RulesQuery } from '../rules-query/index.js'
 import { fold } from '../state/fold.js'
+import type { EffectFrame } from '../state/stack.js'
+import type { GameState } from '../state/types.js'
+import { drainHot } from './hot.js'
 
 // ---------------------------------------------------------------------------
 // feprStep — one iteration of the FEPR loop
@@ -16,7 +16,7 @@ export function feprStep(
   state: GameState,
   query: RulesQuery,
   catalog: CardCatalog,
-  programs: ReadonlyMap<string, EffectProgram>,
+  programs: ReadonlyMap<string, EffectProgram>
 ): { state: GameState; events: GameEvent[] } {
   const allEvents: GameEvent[] = []
 
@@ -38,10 +38,7 @@ export function feprStep(
       const updatedFrame = { ...topFrame, resumeAt: 'Execute' as const }
       state = {
         ...state,
-        resolutionStack: [
-          ...state.resolutionStack.slice(0, -1),
-          updatedFrame,
-        ],
+        resolutionStack: [...state.resolutionStack.slice(0, -1), updatedFrame],
       }
       return feprStep(state, query, catalog, programs)
     }
@@ -61,16 +58,13 @@ export function feprStep(
       const updatedFrame = { ...topFrame, resumeAt: 'Resolve' as const }
       state = {
         ...state,
-        resolutionStack: [
-          ...state.resolutionStack.slice(0, -1),
-          updatedFrame,
-        ],
+        resolutionStack: [...state.resolutionStack.slice(0, -1), updatedFrame],
       }
       return feprStep(state, query, catalog, programs)
     }
 
     case 'Resolve': {
-      const unresolved = [...state.chain.items].reverse().find(item => !item.resolved)
+      const unresolved = [...state.chain.items].reverse().find((item) => !item.resolved)
 
       if (!unresolved) {
         const chainClosedEvent: GameEvent = { type: 'ChainClosed' }
@@ -89,8 +83,8 @@ export function feprStep(
           ...state,
           chain: {
             ...state.chain,
-            items: state.chain.items.map(item =>
-              item.id === unresolved.id ? { ...item, resolved: true } : item,
+            items: state.chain.items.map((item) =>
+              item.id === unresolved.id ? { ...item, resolved: true } : item
             ),
           },
         }
@@ -101,19 +95,18 @@ export function feprStep(
         ...state,
         chain: {
           ...state.chain,
-          items: state.chain.items.map(item =>
-            item.id === unresolved.id ? { ...item, resolved: true } : item,
+          items: state.chain.items.map((item) =>
+            item.id === unresolved.id ? { ...item, resolved: true } : item
           ),
         },
       }
 
       const playAbility = program.abilities.find(
-        (a): a is Extract<typeof a, { type: 'Triggered' | 'Activated' }> => a.type !== 'Static',
+        (a): a is Extract<typeof a, { type: 'Triggered' | 'Activated' }> => a.type !== 'Static'
       )
       if (playAbility) {
-        const effectNodes = playAbility.effect.type === 'Sequence'
-          ? playAbility.effect.effects
-          : [playAbility.effect]
+        const effectNodes =
+          playAbility.effect.type === 'Sequence' ? playAbility.effect.effects : [playAbility.effect]
 
         const frame: EffectFrame = {
           type: 'Effect',
@@ -128,7 +121,8 @@ export function feprStep(
         while (
           stepResult.state.pendingDecision === null &&
           stepResult.state.resolutionStack.length > 0 &&
-          stepResult.state.resolutionStack[stepResult.state.resolutionStack.length - 1]?.type === 'Effect'
+          stepResult.state.resolutionStack[stepResult.state.resolutionStack.length - 1]?.type ===
+            'Effect'
         ) {
           allEvents.push(...stepResult.events)
           state = stepResult.state

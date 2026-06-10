@@ -1,4 +1,4 @@
-import type { MatchId, PlayerId, CardDefId } from '@thejokersthief/riftbound-protocol'
+import type { CardDefId, MatchId, PlayerId } from '@thejokersthief/riftbound-protocol'
 import type { GameState } from '../state/types.js'
 
 export type DeckConfig = {

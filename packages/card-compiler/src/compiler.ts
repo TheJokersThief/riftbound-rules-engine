@@ -1,12 +1,12 @@
-import type { CardDefId } from '@thejokersthief/riftbound-protocol'
+import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
 import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
-import type { CardDefinition, CardCatalog } from '@thejokersthief/riftbound-card-catalog'
+import type { CardDefId } from '@thejokersthief/riftbound-protocol'
+import { decompile } from './decompiler.js'
 import type { FallbackRegistry } from './fallbacks/index.js'
 import { normalize } from './pipeline/normalizer.js'
+import { ParseError, parse } from './pipeline/parser.js'
 import { segment } from './pipeline/segmenter.js'
-import { parse, ParseError } from './pipeline/parser.js'
-import { validate, ValidationError } from './pipeline/validator.js'
-import { decompile } from './decompiler.js'
+import { ValidationError, validate } from './pipeline/validator.js'
 
 export type CompiledCard =
   | { status: 'parsed'; defId: CardDefId; program: EffectProgram }

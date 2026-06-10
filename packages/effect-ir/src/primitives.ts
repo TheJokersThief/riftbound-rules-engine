@@ -12,6 +12,10 @@ export const AbilityTimingSchema = z.enum(['Chain', 'Showdown', 'Anytime', 'Your
 export type AbilityTiming = z.infer<typeof AbilityTimingSchema>
 
 export const LayerNumberSchema = z.union([
-  z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5),
+  z.literal(1),
+  z.literal(2),
+  z.literal(3),
+  z.literal(4),
+  z.literal(5),
 ])
 export type LayerNumber = z.infer<typeof LayerNumberSchema>

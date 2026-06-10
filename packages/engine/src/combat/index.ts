@@ -1,13 +1,10 @@
-import type { GameEvent, BattlefieldId, CardId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
-import type { GameState } from '../state/types.js'
+import type { BattlefieldId, CardId, GameEvent } from '@thejokersthief/riftbound-protocol'
 import type { RulesQuery } from '../rules-query/index.js'
-import {
-  buildDefaultAssignments,
-  applyDamageAssignments,
-} from './damage.js'
-import { resolveDeaths, resolveControl } from './resolution.js'
+import type { GameState } from '../state/types.js'
+import { applyDamageAssignments, buildDefaultAssignments } from './damage.js'
+import { resolveControl, resolveDeaths } from './resolution.js'
 
 export { buildDefaultAssignments, applyDamageAssignments, computeDamagePool } from './damage.js'
 export { resolveDeaths, resolveControl } from './resolution.js'
@@ -21,7 +18,7 @@ export function resolveCombat(
   battlefieldId: BattlefieldId,
   query: RulesQuery,
   catalog: CardCatalog,
-  programs?: ReadonlyMap<string, EffectProgram>,
+  programs?: ReadonlyMap<string, EffectProgram>
 ): { state: GameState; events: GameEvent[] } {
   const bf = state.battlefields[battlefieldId]
   if (!bf) return { state, events: [] }
@@ -29,12 +26,12 @@ export function resolveCombat(
   const allEvents: GameEvent[] = []
   const contestingPlayerId = state.activePlayerId
 
-  const attackers: CardId[] = bf.units.filter(id => {
+  const attackers: CardId[] = bf.units.filter((id) => {
     const card = state.cards[id]
     return card?.ownerId === contestingPlayerId
   })
 
-  const defenders: CardId[] = bf.units.filter(id => {
+  const defenders: CardId[] = bf.units.filter((id) => {
     const card = state.cards[id]
     return card !== undefined && card.ownerId !== contestingPlayerId
   })
