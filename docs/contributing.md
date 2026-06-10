@@ -40,16 +40,20 @@ The critical constraint: `engine` must not import `card-compiler`. The engine is
 
 ## Adding a Card
 
-Edit `packages/card-catalog/data/cards.json`. No engine changes needed — the catalog reads from this snapshot at runtime via `defaultSnapshotSource`. If the card has ability text, the card-compiler package parses it into an effect program at build time.
+Edit `packages/card-catalog/data/cards.json`. No engine changes needed — the catalog reads from this snapshot at runtime via `defaultSnapshotSource`. If the card has ability text, run the compile script to regenerate `compiled-catalog.json`:
+
+```bash
+pnpm --filter @thejokersthief/riftbound-card-compiler compile
+```
 
 ## Key Directories by Concern
 
 | Concern | Location |
 |---|---|
-| Turn phases (Start, Channel, Main, Ending, Cleanup) | `packages/engine/src/turn/` |
+| Turn phases (Start, Channel, Main, Ending) and cleanup logic | `packages/engine/src/turn/` |
 | Chain resolution and priority | `packages/engine/src/chain/` |
 | Combat and showdowns | `packages/engine/src/combat/` |
-| Stat resolution (5-layer dependency graph) | `packages/engine/src/rules-query/` |
+| Stat resolution (might and keyword queries) | `packages/engine/src/rules-query/` |
 | State events and `fold` reducer | `packages/engine/src/state/` |
 | Effect interpreter | `packages/engine/src/interpreter/` |
 | Player view projection (`viewFor`) | `packages/engine/src/visibility/` |
