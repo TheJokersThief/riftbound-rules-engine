@@ -124,11 +124,14 @@ function makeCatalog(cards: CardDefinition[]): CardCatalog {
 }
 
 describe('compile', () => {
-  it('returns { status: "unparsed" } for a card with empty ability text', () => {
+  it('returns { status: "parsed" } with empty abilities for a card with empty ability text', () => {
     const compiler = createCompiler({ get: () => null })
     const def = makeCardDef({ abilityText: '' })
     const result = compiler.compile(def)
-    expect(result.status).toBe('unparsed')
+    expect(result.status).toBe('parsed')
+    if (result.status === 'parsed') {
+      expect(result.program).toEqual({ type: 'Compiled', abilities: [] })
+    }
   })
 
   it('returns { status: "parsed" } for a card with complex ability text (lenient parser always succeeds)', () => {
@@ -172,10 +175,10 @@ describe('compileAll', () => {
     const result = compiler.compileAll(catalog)
 
     expect(result.coverageReport.total).toBe(2)
-    expect(result.coverageReport.unparsed).toBe(1) // only the empty-text card
-    expect(result.coverageReport.parsed).toBe(1) // "When played, draw a card." parses
+    expect(result.coverageReport.unparsed).toBe(0) // empty-text card now counts as parsed
+    expect(result.coverageReport.parsed).toBe(2) // both cards parse (empty → zero abilities)
     expect(result.coverageReport.fallback).toBe(0)
-    expect(result.parseRate).toBe(0.5) // 1 parsed / (1 parsed + 1 unparsed)
+    expect(result.parseRate).toBe(1) // 2 parsed / (2 parsed + 0 unparsed)
     expect(result.cards).toHaveLength(2)
     // round-trip failures expected since DUMMY effect decompiles differently than original
   })
