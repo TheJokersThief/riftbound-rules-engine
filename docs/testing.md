@@ -6,18 +6,15 @@ Tests in this repo assert **rules correctness** — that the engine behaves the 
 
 The test suite lives in `packages/engine/src/__tests__/` (engine tests) and `packages/*/src/` (per-package tests). All tests use [Vitest](https://vitest.dev/).
 
-The card catalog is loaded once per suite using Vitest's `beforeAll`:
+Tests that need the card catalog load it at module scope using top-level `await`:
 
 ```ts
 import { createCardCatalog, defaultSnapshotSource } from '@thejokersthief/riftbound-card-catalog'
-import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 
-let catalog: CardCatalog
-
-beforeAll(async () => {
-  catalog = await createCardCatalog(defaultSnapshotSource)
-})
+const catalog = await createCardCatalog(defaultSnapshotSource)
 ```
+
+Pure unit tests (chain, turn, combat, etc.) construct their own minimal game states without loading the snapshot source at all.
 
 Most tests use `buildBoard` and `buildDeck` from `@thejokersthief/riftbound-test-helpers` to construct a `GameState` directly — bypassing `createGame` and mulligan so tests start at the exact board position they need:
 
@@ -103,7 +100,7 @@ runScenario({
 
 ### Fuzz Tests
 
-`fuzz.test.ts` runs multiple seeded games. Each step picks a random legal action from `legalActions`. The test asserts no unhandled exceptions at any point:
+`fuzz.test.ts` runs multiple seeded games. Each step picks a random legal action from `legalMatchActions`. The test asserts no unhandled exceptions at any point:
 
 ```ts
 import { FUZZ_ITERATIONS, playFuzzGame } from '@thejokersthief/riftbound-test-helpers'
@@ -123,12 +120,13 @@ it('does not throw across multiple seeds', () => {
 `determinism.test.ts` replays the same seed and action sequence twice and asserts the final states are deep-equal. This catches any accidental use of `Math.random()` or `Date.now()` anywhere in the engine:
 
 ```ts
+import { serialize } from '@thejokersthief/riftbound-engine'
 import { playFuzzGame } from '@thejokersthief/riftbound-test-helpers'
 
-it('produces identical states for the same seed', () => {
-  const r1 = playFuzzGame(42, catalog, 200)
-  const r2 = playFuzzGame(42, catalog, 200)
-  expect(r1.matchState.currentGame).toEqual(r2.matchState.currentGame)
+it('produces byte-identical serialized state when replayed with the same seed', () => {
+  const r1 = playFuzzGame(42, catalog, 50)
+  const r2 = playFuzzGame(42, catalog, 50)
+  expect(serialize(r1.matchState.currentGame)).toBe(serialize(r2.matchState.currentGame))
 })
 ```
 
@@ -138,7 +136,7 @@ it('produces identical states for the same seed', () => {
 
 | Export | Purpose |
 |---|---|
-| `buildDeck(overrides?)` | Returns a valid `DeckConfig` using real card IDs from `packages/card-catalog/data/cards.json` |
+| `buildDeck(overrides?)` | Returns a valid `DeckConfig` using real card IDs from `packages/card-catalog/data/cards.json` (override any field with `overrides`) |
 | `buildBoard(config)` | Constructs a `GameState` at a specific board position without running through `createGame` |
 | `buildMatch(config)` | Constructs a `MatchState` ready to receive actions |
 | `runScenario(scenario)` | Runs an action sequence and calls `assert` on the result |
