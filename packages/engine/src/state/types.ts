@@ -11,14 +11,12 @@ import { PhaseSchema, DecisionRequestSchema } from '@thejokersthief/riftbound-pr
 import { TriggerEventSchema } from '@thejokersthief/riftbound-effect-ir'
 import { StackFrameSchema } from './stack.js'
 
-// RuneSlot
 export const RuneSlotSchema = z.object({
   filled: z.boolean(),
   runeCardId: CardIdSchema.nullable(),
 })
 export type RuneSlot = z.infer<typeof RuneSlotSchema>
 
-// PlayerState
 export const PlayerStateSchema = z.object({
   hand: z.array(CardIdSchema),
   mainDeck: z.array(CardIdSchema),
@@ -32,7 +30,6 @@ export const PlayerStateSchema = z.object({
 })
 export type PlayerState = z.infer<typeof PlayerStateSchema>
 
-// CardInstance
 export const CardInstanceSchema = z.object({
   id: CardIdSchema,
   defId: CardDefIdSchema,
@@ -46,7 +43,6 @@ export const CardInstanceSchema = z.object({
 })
 export type CardInstance = z.infer<typeof CardInstanceSchema>
 
-// BattlefieldState
 export const BattlefieldStateSchema = z.object({
   id: BattlefieldIdSchema,
   cardId: CardIdSchema,
@@ -55,7 +51,6 @@ export const BattlefieldStateSchema = z.object({
 })
 export type BattlefieldState = z.infer<typeof BattlefieldStateSchema>
 
-// ChainItem
 export const ChainItemSchema = z.object({
   id: z.string(),
   sourceId: CardIdSchema,
@@ -66,14 +61,12 @@ export const ChainItemSchema = z.object({
 })
 export type ChainItem = z.infer<typeof ChainItemSchema>
 
-// ShowdownState
 export const ShowdownStateSchema = z.object({
   battlefieldId: BattlefieldIdSchema,
   kind: z.enum(['Combat', 'Control']),
 })
 export type ShowdownState = z.infer<typeof ShowdownStateSchema>
 
-// ChainState
 export const ChainStateSchema = z.object({
   isOpen: z.boolean(),
   items: z.array(ChainItemSchema),
@@ -83,7 +76,6 @@ export const ChainStateSchema = z.object({
 })
 export type ChainState = z.infer<typeof ChainStateSchema>
 
-// TriggeredAbilityTask
 export const TriggeredAbilityTaskSchema = z.object({
   sourceId: CardIdSchema,
   abilityIndex: z.number().int().nonnegative(),
@@ -95,7 +87,6 @@ export const TriggeredAbilityTaskSchema = z.object({
 })
 export type TriggeredAbilityTask = z.infer<typeof TriggeredAbilityTaskSchema>
 
-// GameState
 export const GameStateSchema = z.object({
   gameId: GameIdSchema,
   matchId: MatchIdSchema,

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { FilterNodeSchema, SelectorNodeSchema } from './selectors.js'
+import { FilterNodeSchema, SelectorNodeSchema, type SelectorNode } from './selectors.js'
 
 export const RuneSymbolSchema = z.enum(['action', 'reaction', 'any'])
 export type RuneSymbol = z.infer<typeof RuneSymbolSchema>
@@ -29,8 +29,8 @@ export type CostNode =
   | { type: 'Power'; amount: number }
   | { type: 'Rune'; symbols: RuneSymbol[] }
   | { type: 'Exhaust' }
-  | { type: 'Sacrifice'; targets: z.infer<typeof SelectorNodeSchema> }
-  | { type: 'Discard'; targets: z.infer<typeof SelectorNodeSchema> }
+  | { type: 'Sacrifice'; targets: SelectorNode }
+  | { type: 'Discard'; targets: SelectorNode }
   | { type: 'SpendXP'; amount: number }
   | { type: 'AdditionalCost'; cost: CostNode }
 

@@ -33,7 +33,6 @@ function toCardInstanceView(
   }
   const inst = state.cards[cardId]
   if (!inst) {
-    // Card not found — return a minimal hidden view
     return {
       cardId,
       defId: null,

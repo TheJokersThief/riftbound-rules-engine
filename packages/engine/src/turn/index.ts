@@ -18,17 +18,14 @@ export function advanceTurn(
 ): { state: GameState; events: GameEvent[] } {
   const allEvents: GameEvent[] = []
 
-  // 1. Start Ending phase
   const endingResult = startEndingPhase(state)
   state = endingResult.state
   allEvents.push(...endingResult.events)
 
-  // 2. Run cleanup (scoring, HOT drain, win condition check, reset)
   const cleanupResult = runCleanup(state, state.activePlayerId, query, catalog, programs)
   state = cleanupResult.state
   allEvents.push(...cleanupResult.events)
 
-  // 3. Advance turn (emit TurnEnded, rotate active player)
   const turnEndResult = advanceTurnEnd(state)
   state = turnEndResult.state
   allEvents.push(...turnEndResult.events)

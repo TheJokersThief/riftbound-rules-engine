@@ -23,7 +23,6 @@ export const LocationFilterSchema = z.discriminatedUnion('type', [
 ])
 export type LocationFilter = z.infer<typeof LocationFilterSchema>
 
-// Quantity
 export const QuantitySchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('One') }),
   z.object({ type: z.literal('All') }),
@@ -32,7 +31,6 @@ export const QuantitySchema = z.discriminatedUnion('type', [
 ])
 export type Quantity = z.infer<typeof QuantitySchema>
 
-// SelectorNode
 export type SelectorNode = {
   scope: 'Friendly' | 'Enemy' | 'Any'
   objectType: 'Unit' | 'Gear' | 'Spell' | 'Card' | 'Player'

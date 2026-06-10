@@ -9,26 +9,15 @@ import { fold } from '../state/fold.js'
 import { resolveSelector, evalNumberExpr, resolvePlayerRef } from './selectors.js'
 
 // ---------------------------------------------------------------------------
-// Helper: map a ZoneRef string to a ZoneId
-// We cast since ZoneId is a branded string.
-// ---------------------------------------------------------------------------
-
-function zoneRefToZoneId(ref: string): ZoneId {
-  return ref as ZoneId
-}
-
-// ---------------------------------------------------------------------------
 // Helper: find which zone a card currently lives in (best-effort)
 // ---------------------------------------------------------------------------
 
 function currentZoneOfCard(state: GameState, cardId: CardId): ZoneId {
-  // Check battlefields
   for (const bf of Object.values(state.battlefields)) {
     if (!bf) continue
     if (bf.units.includes(cardId)) return 'battlefield' as ZoneId
   }
-  // Check player hands / decks / base
-  for (const [, player] of Object.entries(state.players)) {
+  for (const player of Object.values(state.players)) {
     if (!player) continue
     if (player.hand.includes(cardId)) return 'hand' as ZoneId
     if (player.mainDeck.includes(cardId)) return 'mainDeck' as ZoneId
@@ -105,7 +94,7 @@ export function executeAction(
       let s = state
       for (const cardId of targets) {
         const fromZone = currentZoneOfCard(s, cardId)
-        const toZone = zoneRefToZoneId(node.toZone)
+        const toZone = node.toZone as ZoneId
         const event: GameEvent = { type: 'CardMoved', cardId, fromZone, toZone }
         events.push(event)
         s = fold(s, event)
@@ -204,7 +193,7 @@ export function executeAction(
       const count = evalNumberExpr(node.count, state, frame.sourceId, query, catalog)
       const events: GameEvent[] = []
       let s = state
-      const zoneId = zoneRefToZoneId(node.zone)
+      const zoneId = node.zone as ZoneId
       for (let i = 0; i < count; i++) {
         const cardId = `tok_${Math.random().toString(36).slice(2, 9)}` as CardId
         const event: GameEvent = { type: 'TokenCreated', cardId, defId: node.defId, zoneId }

@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { AbilityTimingSchema, LayerNumberSchema, PlayerRefSchema } from './primitives.js'
-import { SelectorNodeSchema, SelectorNode } from './selectors.js'
-import { CostNodeSchema, TriggerEventSchema } from './costs.js'
-import { ConditionNodeSchema, ConditionNode } from './conditions.js'
-import { ActionNodeSchema, ActionNode } from './actions.js'
+import { AbilityTimingSchema, LayerNumberSchema, PlayerRefSchema, type AbilityTiming, type LayerNumber, type PlayerRef } from './primitives.js'
+import { SelectorNodeSchema, type SelectorNode } from './selectors.js'
+import { CostNodeSchema, TriggerEventSchema, type CostNode, type TriggerEvent } from './costs.js'
+import { ConditionNodeSchema, type ConditionNode } from './conditions.js'
+import { ActionNodeSchema, type ActionNode } from './actions.js'
 
 // ---- Types (declared first so they can reference each other) ----
 
@@ -11,13 +11,13 @@ export type ModificationNode =
   | { type: 'ModifyMight'; targets: SelectorNode; amount: number }
   | { type: 'AddKeyword'; targets: SelectorNode; keyword: string }
   | { type: 'GrantAbility'; targets: SelectorNode; ability: AbilityNode }
-  | { type: 'ModifySpellDamage'; player: z.infer<typeof PlayerRefSchema>; amount: number }
+  | { type: 'ModifySpellDamage'; player: PlayerRef; amount: number }
   | { type: 'PreventDamage'; targets: SelectorNode }
 
 export type AbilityNode =
-  | { type: 'Triggered'; event: z.infer<typeof TriggerEventSchema>; condition?: ConditionNode | undefined; effect: EffectNode }
-  | { type: 'Activated'; cost: z.infer<typeof CostNodeSchema>[]; timing: z.infer<typeof AbilityTimingSchema>; effect: EffectNode }
-  | { type: 'Static'; layer: z.infer<typeof LayerNumberSchema>; modification: ModificationNode }
+  | { type: 'Triggered'; event: TriggerEvent; condition?: ConditionNode | undefined; effect: EffectNode }
+  | { type: 'Activated'; cost: CostNode[]; timing: AbilityTiming; effect: EffectNode }
+  | { type: 'Static'; layer: LayerNumber; modification: ModificationNode }
 
 export type EffectNode =
   | ActionNode

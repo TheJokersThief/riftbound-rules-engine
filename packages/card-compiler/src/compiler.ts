@@ -42,8 +42,7 @@ export interface Compiler {
 
 export function createCompiler(fallbacks: FallbackRegistry): Compiler {
   function compile(def: CardDefinition): CompiledCard {
-    // Empty ability text → unparsed
-    if (!def.abilityText || def.abilityText.trim() === '') {
+    if (def.abilityText.trim() === '') {
       return { status: 'unparsed', defId: def.id }
     }
 
@@ -94,7 +93,6 @@ export function createCompiler(fallbacks: FallbackRegistry): Compiler {
     const fallbackCount = cards.filter((c) => c.status === 'fallback').length
     const unparsedCount = cards.filter((c) => c.status === 'unparsed').length
 
-    // parseRate excludes fallback cards from both numerator and denominator
     const denominator = parsedCount + unparsedCount
     const parseRate = denominator === 0 ? 1 : parsedCount / denominator
 

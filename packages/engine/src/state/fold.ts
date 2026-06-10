@@ -22,7 +22,7 @@ export function fold(state: GameState, event: GameEvent): GameState {
         ...state,
         turnNumber: event.turnNumber,
         activePlayerId: event.activePlayerId,
-        scoredThisTurn: {} as Record<PlayerId, BattlefieldId[]>,
+        scoredThisTurn: {},
       }
 
     case 'PhaseStarted':
@@ -107,23 +107,22 @@ export function fold(state: GameState, event: GameEvent): GameState {
       }))
 
     case 'CardKilled': {
-      return {
-        ...state,
-        battlefields: Object.fromEntries(
-          (Object.entries(state.battlefields) as [BattlefieldId, BattlefieldState][]).map(
-            ([bfId, bf]) => [
-              bfId,
-              { ...bf, units: bf.units.filter(id => id !== event.cardId) },
-            ],
-          ),
-        ) as Record<BattlefieldId, BattlefieldState>,
-        players: Object.fromEntries(
-          (Object.entries(state.players) as [PlayerId, PlayerState][]).map(([pid, p]) => [
-            pid,
-            { ...p, base: p.base.filter(id => id !== event.cardId) },
-          ]),
-        ) as Record<PlayerId, PlayerState>,
+      const killedId = event.cardId
+      const battlefields = { ...state.battlefields } as Record<BattlefieldId, BattlefieldState>
+      for (const bfId of Object.keys(battlefields) as BattlefieldId[]) {
+        const bf = battlefields[bfId]!
+        if (bf.units.includes(killedId)) {
+          battlefields[bfId] = { ...bf, units: bf.units.filter(id => id !== killedId) }
+        }
       }
+      const players = { ...state.players } as Record<PlayerId, PlayerState>
+      for (const pid of Object.keys(players) as PlayerId[]) {
+        const p = players[pid]!
+        if (p.base.includes(killedId)) {
+          players[pid] = { ...p, base: p.base.filter(id => id !== killedId) }
+        }
+      }
+      return { ...state, battlefields, players }
     }
 
     case 'ControlChanged':

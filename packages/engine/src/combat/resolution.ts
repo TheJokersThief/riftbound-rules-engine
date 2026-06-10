@@ -29,12 +29,10 @@ export function resolveDeaths(
 
     if (!isDead) continue
 
-    // Emit CardKilled
     const killedEvent: GameEvent = { type: 'CardKilled', cardId }
     events.push(killedEvent)
     state = fold(state, killedEvent)
 
-    // Emit CardMoved — battlefield → discard zone
     const fromZone = `battlefield-${cardId}` as ZoneId
     const toZone = `discard-${card.ownerId}` as ZoneId
     const movedEvent: GameEvent = {
@@ -46,7 +44,6 @@ export function resolveDeaths(
     events.push(movedEvent)
     state = fold(state, movedEvent)
 
-    // Collect WhenKilled triggers into hotQueue
     if (programs && catalog) {
       state = collectTriggers(state, [killedEvent], programs, catalog, query)
     }

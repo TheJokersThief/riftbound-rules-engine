@@ -7,6 +7,5 @@ export interface KeywordRegistry {
 }
 
 export const keywordRegistry: KeywordRegistry = {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  get: (_name) => null, // empty for now
+  get: (_name) => null,
 }

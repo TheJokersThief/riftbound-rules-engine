@@ -1,0 +1,4 @@
+
+> @thejokersthief/riftbound-protocol@0.0.1 typecheck /Users/evansmith/Documents/github/riftbound-rules-engine/packages/protocol
+> tsc --noEmit -p tsconfig.json
+

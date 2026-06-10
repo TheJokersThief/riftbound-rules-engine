@@ -7,11 +7,6 @@ export class ValidationError extends Error {
   }
 }
 
-/**
- * Validate parsed AbilityNode[].
- *
- * Currently a pass-through; validates once parser produces output.
- */
 export function validate(abilities: AbilityNode[]): AbilityNode[] {
   return abilities
 }

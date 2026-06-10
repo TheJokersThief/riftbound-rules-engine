@@ -16,14 +16,12 @@ export function advance(
   catalog: CardCatalog,
   programs: ReadonlyMap<string, EffectProgram> = new Map(),
 ): { state: GameState; events: GameEvent[] } {
-  // Already suspended — nothing to do
   if (state.pendingDecision !== null) {
     return { state, events: [] }
   }
 
   const allEvents: GameEvent[] = []
 
-  // 1. Drain HOT queue
   const hotResult = drainHot(state, query, catalog, programs)
   state = hotResult.state
   allEvents.push(...hotResult.events)
@@ -32,7 +30,6 @@ export function advance(
     return { state, events: allEvents }
   }
 
-  // 2. Run the interpreter step loop until empty or suspended
   let stepResult = step(state, query, catalog)
   while (
     stepResult.state.pendingDecision === null &&

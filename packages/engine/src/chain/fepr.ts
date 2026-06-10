@@ -20,28 +20,22 @@ export function feprStep(
 ): { state: GameState; events: GameEvent[] } {
   const allEvents: GameEvent[] = []
 
-  // 1. Finalize — drain HOT queue
   const hotResult = drainHot(state, query, catalog, programs)
   state = hotResult.state
   allEvents.push(...hotResult.events)
 
-  // If a decision is pending after draining, suspend
   if (state.pendingDecision !== null) {
     return { state, events: allEvents }
   }
 
-  // 2. Check for a ChainFrame on the resolution stack
   const topFrame = state.resolutionStack[state.resolutionStack.length - 1]
   if (!topFrame || topFrame.type !== 'Chain') {
     return { state, events: allEvents }
   }
 
-  const chainFrame = topFrame
-
-  switch (chainFrame.resumeAt) {
+  switch (topFrame.resumeAt) {
     case 'Finalize': {
-      // Drain is done above; advance to Execute
-      const updatedFrame = { ...chainFrame, resumeAt: 'Execute' as const }
+      const updatedFrame = { ...topFrame, resumeAt: 'Execute' as const }
       state = {
         ...state,
         resolutionStack: [
@@ -49,12 +43,10 @@ export function feprStep(
           updatedFrame,
         ],
       }
-      // Fall through to Execute by recursing
       return feprStep(state, query, catalog, programs)
     }
 
     case 'Execute': {
-      // Grant priority window to the active player
       state = {
         ...state,
         pendingDecision: {
@@ -66,8 +58,7 @@ export function feprStep(
     }
 
     case 'Pass': {
-      // Both players passed — advance to Resolve
-      const updatedFrame = { ...chainFrame, resumeAt: 'Resolve' as const }
+      const updatedFrame = { ...topFrame, resumeAt: 'Resolve' as const }
       state = {
         ...state,
         resolutionStack: [
@@ -79,11 +70,9 @@ export function feprStep(
     }
 
     case 'Resolve': {
-      // Find the newest unresolved chain item (LIFO)
       const unresolved = [...state.chain.items].reverse().find(item => !item.resolved)
 
       if (!unresolved) {
-        // All items resolved — emit ChainClosed and pop the ChainFrame
         const chainClosedEvent: GameEvent = { type: 'ChainClosed' }
         state = fold(state, chainClosedEvent)
         allEvents.push(chainClosedEvent)
@@ -94,10 +83,8 @@ export function feprStep(
         return { state, events: allEvents }
       }
 
-      // Get the program for this chain item
       const program = programs.get(unresolved.defId)
       if (!program || program.type === 'Unparsed') {
-        // Mark resolved and continue
         state = {
           ...state,
           chain: {
@@ -110,7 +97,6 @@ export function feprStep(
         return feprStep(state, query, catalog, programs)
       }
 
-      // Mark item as resolved
       state = {
         ...state,
         chain: {
@@ -121,7 +107,6 @@ export function feprStep(
         },
       }
 
-      // Push an EffectFrame for the first compiled ability's effect (the play effect)
       const playAbility = program.abilities.find(
         (a): a is Extract<typeof a, { type: 'Triggered' | 'Activated' }> => a.type !== 'Static',
       )
@@ -139,7 +124,6 @@ export function feprStep(
         }
         state = { ...state, resolutionStack: [...state.resolutionStack, frame] }
 
-        // Run the step loop until empty or suspended
         let stepResult = step(state, query, catalog)
         while (
           stepResult.state.pendingDecision === null &&

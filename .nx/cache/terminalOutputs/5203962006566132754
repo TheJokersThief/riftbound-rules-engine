@@ -1,0 +1,4 @@
+
+> @thejokersthief/riftbound-card-compiler@0.0.1 typecheck /Users/evansmith/Documents/github/riftbound-rules-engine/packages/card-compiler
+> tsc --noEmit -p tsconfig.json
+

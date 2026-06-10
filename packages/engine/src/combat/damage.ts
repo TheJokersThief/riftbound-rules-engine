@@ -66,7 +66,6 @@ export function buildDefaultAssignments(
 ): DamageAssignment[] {
   if (attackers.length === 0 || defenders.length === 0) return []
 
-  // Separate defenders: Tank units first, then non-Tank
   const tankDefenders = defenders.filter(id => query.keywordsOf(id).includes('Tank'))
   const nonTankDefenders = defenders.filter(id => !query.keywordsOf(id).includes('Tank'))
   const orderedDefenders = [...tankDefenders, ...nonTankDefenders]

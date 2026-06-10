@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { PhaseSchema, PlayerRefSchema } from './primitives.js'
-import { SelectorNodeSchema, SelectorNode } from './selectors.js'
+import { PhaseSchema, PlayerRefSchema, type Phase, type PlayerRef } from './primitives.js'
+import { SelectorNodeSchema, type SelectorNode } from './selectors.js'
 
 export type ConditionNode =
   | { type: 'And'; conditions: ConditionNode[] }
@@ -9,9 +9,9 @@ export type ConditionNode =
   | { type: 'SelectorNonEmpty'; selector: SelectorNode }
   | { type: 'CardIsBuffed'; selector: SelectorNode }
   | { type: 'CardHasKeyword'; selector: SelectorNode; keyword: string }
-  | { type: 'ControlsBattlefield'; player: z.infer<typeof PlayerRefSchema> }
-  | { type: 'PlayerHasPoints'; player: z.infer<typeof PlayerRefSchema>; atLeast: number }
-  | { type: 'IsPhase'; phase: z.infer<typeof PhaseSchema> }
+  | { type: 'ControlsBattlefield'; player: PlayerRef }
+  | { type: 'PlayerHasPoints'; player: PlayerRef; atLeast: number }
+  | { type: 'IsPhase'; phase: Phase }
   | { type: 'IsMyTurn' }
 
 export const ConditionNodeSchema: z.ZodType<ConditionNode> = z.lazy(() =>

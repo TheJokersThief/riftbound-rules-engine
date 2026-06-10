@@ -1,6 +1,3 @@
-/**
- * Mulberry32 PRNG — pure functional (returns next seed rather than mutating).
- */
 export function nextRng(state: { seed: number }): { value: number; next: { seed: number } } {
   let t = (state.seed + 0x6d2b79f5) | 0
   t = Math.imul(t ^ (t >>> 15), t | 1)
@@ -17,9 +14,6 @@ export function nextInt(
   return { value: Math.floor(value * max), next }
 }
 
-/**
- * Fisher-Yates shuffle — returns new array and next RNG state. Pure / no mutation.
- */
 export function shuffle<T>(
   arr: readonly T[],
   rng: { seed: number },

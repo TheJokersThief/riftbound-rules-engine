@@ -1,5 +1,4 @@
-import type { AbilityNode, EffectNode, SelectorNode } from '@thejokersthief/riftbound-effect-ir'
-import type { TriggerEvent, CostNode } from '@thejokersthief/riftbound-effect-ir'
+import type { AbilityNode, EffectNode, SelectorNode, TriggerEvent, CostNode } from '@thejokersthief/riftbound-effect-ir'
 
 export class ParseError extends Error {
   constructor(message: string) {
@@ -7,8 +6,6 @@ export class ParseError extends Error {
     this.name = 'ParseError'
   }
 }
-
-// ---- Shared selectors ----
 
 const SELF: SelectorNode = {
   scope: 'Any',
@@ -28,10 +25,7 @@ const ALL_FRIENDLY: SelectorNode = {
   chooser: 'None',
 }
 
-// Placeholder no-op effect for complex/unknown effects (structurally valid IR)
 const DUMMY: EffectNode = { type: 'Draw', player: 'You', count: 0 }
-
-// ---- Selector parser ----
 
 function sel(text: string): SelectorNode | null {
   const t = text.trim().toLowerCase()
@@ -78,37 +72,30 @@ function sel(text: string): SelectorNode | null {
   return null
 }
 
-// ---- Effect parser (exact matches) ----
-
 function eff(text: string): EffectNode | null {
   const t = text.trim()
 
-  // deal N to <selector>
   const dealM = t.match(/^[Dd]eal\s+(\d+)\s+to\s+(.+)$/)
   if (dealM !== null) {
     const target = sel(dealM[2] ?? '')
     if (target !== null) return { type: 'Deal', targets: target, amount: parseInt(dealM[1] ?? '0', 10) }
   }
 
-  // give <selector> +N [MIGHT] this turn
   const gmM = t.match(/^[Gg]ive\s+(.+?)\s+\+(\d+)\s+\[MIGHT\](?:\s+this\s+turn)?$/)
   if (gmM !== null) {
     const target = sel(gmM[1] ?? '')
     if (target !== null) return { type: 'GiveMight', targets: target, amount: parseInt(gmM[2] ?? '0', 10) }
   }
 
-  // give <selector> [Keyword] this turn
   const gkM = t.match(/^[Gg]ive\s+(.+?)\s+\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+this\s+turn$/)
   if (gkM !== null) {
     const target = sel(gkM[1] ?? '')
     if (target !== null) return { type: 'GrantKeyword', targets: target, keyword: (gkM[2] ?? '').trim() }
   }
 
-  // draw N (exact number only)
   const drawM = t.match(/^[Dd]raw\s+(\d+)$/)
   if (drawM !== null) return { type: 'Draw', player: 'You', count: parseInt(drawM[1] ?? '0', 10) }
 
-  // discard N
   const discardM = t.match(/^[Dd]iscard\s+(\d+)$/)
   if (discardM !== null) {
     const n = parseInt(discardM[1] ?? '1', 10)
@@ -125,21 +112,18 @@ function eff(text: string): EffectNode | null {
     }
   }
 
-  // kill <selector>
   const killM = t.match(/^[Kk]ill\s+(.+)$/)
   if (killM !== null) {
     const target = sel(killM[1] ?? '')
     if (target !== null) return { type: 'Kill', targets: target }
   }
 
-  // buff <selector>
   const buffM = t.match(/^[Bb]uff\s+(.+)$/)
   if (buffM !== null) {
     const target = sel(buffM[1] ?? '')
     if (target !== null) return { type: 'Buff', targets: target, amount: 1 }
   }
 
-  // ready me / ready <selector>
   const readyM = t.match(/^[Rr]eady\s+(.+)$/)
   if (readyM !== null) {
     const targetText = (readyM[1] ?? '').trim()
@@ -147,69 +131,54 @@ function eff(text: string): EffectNode | null {
     if (target !== null) return { type: 'Ready', targets: target }
   }
 
-  // [Add] [EN] — add energy
   const addEM = t.match(/^\[Add\]\s+\[E(\d+)\]$/)
   if (addEM !== null) return { type: 'AddResource', player: 'You', energy: parseInt(addEM[1] ?? '0', 10), power: 0 }
 
-  // gain N XP
   const xpM = t.match(/^[Gg]ain\s+(\d+)\s+XP$/)
   if (xpM !== null) return { type: 'GainXP', targets: SELF, amount: parseInt(xpM[1] ?? '0', 10) }
 
   return null
 }
 
-// ---- Keyword parser ----
-
 function keyword(s: string): AbilityNode | null {
   const t = s.trim()
 
-  // [Keyword] — inline effect description (e.g. [Legion] — When you play me, ready me)
   const kwDash = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s*[—–]\s*.+$/)
   if (kwDash !== null) {
     return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwDash[1] ?? '').trim() } }
   }
 
-  // [Level N][>] ... form
   if (/^\[Level \d+\]\[>\]/.test(t)) {
     return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'Level' } }
   }
 
-  // [Keyword] [EN][RUNE:x]
   const kwER = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+\[E\d+\]\[RUNE:[a-z]+\]$/)
   if (kwER !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwER[1] ?? '').trim() } }
 
-  // [Keyword] [RUNE:x][EN]
   const kwRE = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+\[RUNE:[a-z]+\]\[E\d+\]$/)
   if (kwRE !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwRE[1] ?? '').trim() } }
 
-  // [Keyword] [EN]
   const kwE = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+\[E\d+\]$/)
   if (kwE !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwE[1] ?? '').trim() } }
 
-  // [Keyword] [RUNE:x]
   const kwR = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]\s+\[RUNE:[a-z]+\]$/)
   if (kwR !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (kwR[1] ?? '').trim() } }
 
-  // Pure keyword — letters, digits, spaces, hyphens inside brackets
   const pureKw = t.match(/^\[([A-Za-z][A-Za-z0-9 \-]*)\]$/)
   if (pureKw !== null) return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: (pureKw[1] ?? '').trim() } }
 
   return null
 }
 
-// ---- Activated ability parser ----
-
 function activated(s: string): AbilityNode | null {
   const t = s.trim()
 
-  // [EXHAUST]: effect
   const exh1 = t.match(/^\[EXHAUST\]:\s*(.+)$/)
   if (exh1 !== null) {
     const effect = eff(exh1[1] ?? '') ?? DUMMY
     return { type: 'Activated', cost: [{ type: 'Exhaust' }], timing: 'Anytime', effect }
   }
 
-  // [EN], [EXHAUST]: effect
   const exh2 = t.match(/^\[E(\d+)\],\s*\[EXHAUST\]:\s*(.+)$/)
   if (exh2 !== null) {
     const costs: CostNode[] = [{ type: 'Energy', amount: parseInt(exh2[1] ?? '0', 10) }, { type: 'Exhaust' }]
@@ -217,7 +186,6 @@ function activated(s: string): AbilityNode | null {
     return { type: 'Activated', cost: costs, timing: 'Anytime', effect }
   }
 
-  // [RUNE:x], [EXHAUST]: effect
   const exh3 = t.match(/^\[RUNE:[a-z]+\],\s*\[EXHAUST\]:\s*(.+)$/)
   if (exh3 !== null) {
     const costs: CostNode[] = [{ type: 'Rune', symbols: ['any'] }, { type: 'Exhaust' }]
@@ -225,7 +193,6 @@ function activated(s: string): AbilityNode | null {
     return { type: 'Activated', cost: costs, timing: 'Anytime', effect }
   }
 
-  // [Reaction][>] [EXHAUST]: [Add] [EN]
   const rxn = t.match(/^\[Reaction\]\[>\]\s+\[EXHAUST\]:\s+\[Add\]\s+\[E(\d+)\]$/)
   if (rxn !== null) {
     return {
@@ -238,8 +205,6 @@ function activated(s: string): AbilityNode | null {
 
   return null
 }
-
-// ---- Trigger event detector ----
 
 function detectTrigger(s: string): { event: TriggerEvent; afterComma: string } | null {
   const t = s.trim()
@@ -272,47 +237,37 @@ function detectTrigger(s: string): { event: TriggerEvent; afterComma: string } |
     return { event: { type: 'AtStartOfTurn' }, afterComma: afterFirstComma() }
   if (/^At (?:the )?end of\b/i.test(t))
     return { event: { type: 'AtEndOfTurn' }, afterComma: afterFirstComma() }
-  // Generic "When X, ..." — approximate as WhenPlayed
   if (/^When\b/i.test(t))
     return { event: { type: 'WhenPlayed' }, afterComma: afterFirstComma() }
-  // Generic "At X, ..." — approximate as AtStartOfTurn
   if (/^At\b/i.test(t))
     return { event: { type: 'AtStartOfTurn' }, afterComma: afterFirstComma() }
 
   return null
 }
 
-// ---- Main sentence parser ----
-
 function parseSentence(sentence: string): AbilityNode {
   const s = sentence.trim()
   if (!s) throw new ParseError('empty sentence')
 
-  // 1. Keyword forms
   const kw = keyword(s)
   if (kw !== null) return kw
 
-  // 2. "I enter ready"
   if (/^I enter ready$/i.test(s)) {
     return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: { type: 'Ready', targets: SELF } }
   }
 
-  // 3. "Friendly units enter ready this turn"
   if (/^[Ff]riendly units enter ready this turn$/i.test(s)) {
     return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: { type: 'Ready', targets: ALL_FRIENDLY } }
   }
 
-  // 4. "Your spells and abilities deal N Bonus Damage"
   const spellDmgM = s.match(/^Your spells and abilities deal\s+(\d+)\s+Bonus Damage$/i)
   if (spellDmgM !== null) {
     return { type: 'Static', layer: 3, modification: { type: 'ModifySpellDamage', player: 'You', amount: parseInt(spellDmgM[1] ?? '0', 10) } }
   }
 
-  // 5. Activated ability
   const act = activated(s)
   if (act !== null) return act
 
-  // 6. Triggered: When / At patterns
   const trig = detectTrigger(s)
   if (trig !== null) {
     const { event, afterComma } = trig
@@ -320,11 +275,8 @@ function parseSentence(sentence: string): AbilityNode {
     return { type: 'Triggered', event, effect }
   }
 
-  // 7. Direct effect (standalone → implicit WhenPlayed)
   const directEff = eff(s)
   if (directEff !== null) return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: directEff }
-
-  // 8. Lenient fallback — structurally valid approximate IR
 
   if (/^(If|While|As long as)\b/i.test(s)) {
     return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'Conditional' } }
@@ -383,12 +335,10 @@ function parseSentence(sentence: string): AbilityNode {
     return { type: 'Triggered', event: { type: 'WhenPlayed' }, effect: DUMMY }
   }
 
-  // Any remaining '[...' that didn't match keyword/activated patterns
   if (s.startsWith('[')) {
     return { type: 'Activated', cost: [{ type: 'Exhaust' }], timing: 'Anytime', effect: DUMMY }
   }
 
-  // Universal fallback: produce a generic static for any non-trivial remaining text
   if (s.length > 1) {
     return { type: 'Static', layer: 3, modification: { type: 'AddKeyword', targets: SELF, keyword: 'Unknown' } }
   }

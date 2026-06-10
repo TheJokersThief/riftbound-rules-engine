@@ -15,7 +15,6 @@ export const DamageAssignmentSchema = z.object({
 })
 export type DamageAssignment = z.infer<typeof DamageAssignmentSchema>
 
-// EffectFrame
 export const EffectFrameSchema = z.object({
   type: z.literal('Effect'),
   sourceId: CardIdSchema,
@@ -25,14 +24,12 @@ export const EffectFrameSchema = z.object({
 })
 export type EffectFrame = z.infer<typeof EffectFrameSchema>
 
-// ChainFrame
 export const ChainFrameSchema = z.object({
   type: z.literal('Chain'),
   resumeAt: z.enum(['Finalize', 'Execute', 'Pass', 'Resolve']),
 })
 export type ChainFrame = z.infer<typeof ChainFrameSchema>
 
-// CombatFrame
 export const CombatFrameSchema = z.object({
   type: z.literal('Combat'),
   battlefieldId: BattlefieldIdSchema,
@@ -41,7 +38,6 @@ export const CombatFrameSchema = z.object({
 })
 export type CombatFrame = z.infer<typeof CombatFrameSchema>
 
-// DecisionFrame — resumeFrame is one of the above (not DecisionFrame itself)
 export const DecisionFrameSchema = z.object({
   type: z.literal('Decision'),
   decisionId: DecisionIdSchema,
@@ -53,7 +49,6 @@ export const DecisionFrameSchema = z.object({
 })
 export type DecisionFrame = z.infer<typeof DecisionFrameSchema>
 
-// StackFrame union
 export const StackFrameSchema = z.discriminatedUnion('type', [
   EffectFrameSchema,
   ChainFrameSchema,

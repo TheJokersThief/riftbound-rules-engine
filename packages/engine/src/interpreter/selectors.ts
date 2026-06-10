@@ -3,9 +3,9 @@ import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type {
   SelectorNode,
   NumberExpr,
+  ConditionNode,
+  PlayerRef,
 } from '@thejokersthief/riftbound-effect-ir'
-import type { ConditionNode } from '@thejokersthief/riftbound-effect-ir'
-import type { PlayerRef } from '@thejokersthief/riftbound-effect-ir'
 import type { GameState, BattlefieldState } from '../state/types.js'
 import type { RulesQuery } from '../rules-query/index.js'
 

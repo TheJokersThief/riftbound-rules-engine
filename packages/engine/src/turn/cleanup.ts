@@ -1,5 +1,4 @@
-import type { GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { PlayerId } from '@thejokersthief/riftbound-protocol'
+import type { GameEvent, PlayerId, BattlefieldId } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import type { EffectProgram } from '@thejokersthief/riftbound-effect-ir'
 import type { GameState } from '../state/types.js'
@@ -40,25 +39,21 @@ export function runCleanup(
 ): { state: GameState; events: GameEvent[] } {
   const allEvents: GameEvent[] = []
 
-  // 1. Check scoring (Hold + Conquer)
   const scoringResult = checkScoring(state, playerId, query)
   state = scoringResult.state
   allEvents.push(...scoringResult.events)
 
-  // 2. Drain HOT queue
   const chainResult = advance(state, query, catalog, programs)
   state = chainResult.state
   allEvents.push(...chainResult.events)
 
-  // 3. Check win condition
   state = checkWinCondition(state)
 
-  // 4. Reset per-turn fields
   state = {
     ...state,
     scoredThisTurn: {
       ...state.scoredThisTurn,
-      [playerId]: [] as import('@thejokersthief/riftbound-protocol').BattlefieldId[],
+      [playerId]: [] as BattlefieldId[],
     },
     holdEligible: [],
   }

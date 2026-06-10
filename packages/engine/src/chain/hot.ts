@@ -14,7 +14,6 @@ import { evalCondition } from '../interpreter/selectors.js'
 function getActiveCardIds(state: GameState): CardId[] {
   const ids: CardId[] = []
 
-  // battlefield units
   for (const bf of Object.values(state.battlefields)) {
     if (!bf) continue
     for (const id of bf.units) {
@@ -22,7 +21,6 @@ function getActiveCardIds(state: GameState): CardId[] {
     }
   }
 
-  // base cards + champion + legend zones
   for (const player of Object.values(state.players)) {
     if (!player) continue
     for (const id of player.base) {
@@ -106,7 +104,6 @@ export function collectTriggers(
 ): GameState {
   if (events.length === 0 || programs.size === 0) return state
 
-  // Collect tasks, active player first then opponent
   const [activePlayer, opponentPlayer] = state.playerIds
   const orderedPlayers: PlayerId[] = opponentPlayer !== undefined
     ? [activePlayer!, opponentPlayer]
@@ -133,7 +130,6 @@ export function collectTriggers(
         for (const event of events) {
           if (!eventMatchesTrigger(ability.event, event, cardId, state)) continue
 
-          // Check optional condition
           if (ability.condition !== undefined) {
             const condMet = evalCondition(ability.condition, state, cardId, query, catalog)
             if (!condMet) continue
@@ -145,7 +141,6 @@ export function collectTriggers(
             controller: card.ownerId,
             context: { triggerEvent: ability.event },
           })
-          // Only add once per event per ability (first matching event wins)
           break
         }
       })
@@ -181,7 +176,6 @@ export function drainHot(
     const ability = program.abilities[task.abilityIndex]
     if (!ability || ability.type !== 'Triggered') continue
 
-    // Flatten the triggered effect into EffectNode[]
     const effectNodes = ability.effect.type === 'Sequence'
       ? ability.effect.effects
       : [ability.effect]
@@ -196,7 +190,6 @@ export function drainHot(
 
     state = { ...state, resolutionStack: [...state.resolutionStack, frame] }
 
-    // Run step loop until empty or suspended
     let stepResult = step(state, query, catalog)
     while (
       stepResult.state.pendingDecision === null &&

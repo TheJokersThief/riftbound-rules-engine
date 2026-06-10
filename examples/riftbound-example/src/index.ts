@@ -19,6 +19,7 @@
 import type { PlayerId, CardDefId, MatchId, BattlefieldId } from '@thejokersthief/riftbound-protocol'
 import type { GameEvent } from '@thejokersthief/riftbound-protocol'
 import type { DeckConfig, GameState } from '@thejokersthief/riftbound-engine'
+import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
 import {
   createGame,
   submit,
@@ -58,19 +59,16 @@ const SEED = 1
 // from the committed cards.json snapshot. createGame() instantiates CardInstances
 // from these definitions and shuffles the decks using the seeded RNG.
 //
-const RUNE_IDS: CardDefId[] = (
-  ['rne001','rne002','rne003','rne004','rne005','rne006','rne007','rne008','rne009','rne010'] as const
-).map(id => id as CardDefId)
+const RUNE_IDS: CardDefId[] = [
+  'ogn-007-298', 'ogn-007a-298', 'ogn-042-298', 'ogn-042a-298', 'ogn-089a-298',
+  'ogn-089-298', 'ogn-126a-298', 'ogn-126-298', 'ogn-166-298', 'ogn-166a-298',
+] as CardDefId[]
 
-const UNIT_POOL: CardDefId[] = (
-  [
-    'unt001','unt002','unt003','unt004','unt005',
-    'unt006','unt007','unt008','unt009','unt010',
-    'unt011','unt012','unt013','unt014','unt015',
-    'gea001','gea002','gea003','gea004',
-    'spl001','spl002','spl003','spl004','spl005','spl006',
-  ] as const
-).map(id => id as CardDefId)
+const UNIT_POOL: CardDefId[] = [
+  'ogn-001-298', 'ogs-001-024', 'unl-001-219', 'sfd-002-221', 'ogn-002-298',
+  'unl-002-219', 'ogn-003-298', 'unl-003-219', 'ogs-004-024', 'unl-004-219',
+  'ogs-005-024', 'unl-005-219', 'ogs-006-024', 'sfd-006-221', 'ogn-004-298',
+] as CardDefId[]
 
 function buildMainDeck(): CardDefId[] {
   const deck: CardDefId[] = []
@@ -83,19 +81,19 @@ function buildMainDeck(): CardDefId[] {
 }
 
 const ARIA_DECK: DeckConfig = {
-  legendId:       'leg001' as CardDefId,
-  championId:     'chm001' as CardDefId,
-  battlefields: ['btf001', 'btf002', 'btf003'] as [CardDefId, CardDefId, CardDefId],
-  mainDeck:       buildMainDeck(),
-  runeDeck:       RUNE_IDS,
+  legendId:    'ogs-017-024' as CardDefId,
+  championId:  'ogs-021-024' as CardDefId,
+  battlefields: ['unl-t01', 'unl-t03', 'unl-205-219'] as [CardDefId, CardDefId, CardDefId],
+  mainDeck:    buildMainDeck(),
+  runeDeck:    RUNE_IDS,
 }
 
 const BOWEN_DECK: DeckConfig = {
-  legendId:       'leg002' as CardDefId,
-  championId:     'chm002' as CardDefId,
-  battlefields: ['btf004', 'btf005', 'btf006'] as [CardDefId, CardDefId, CardDefId],
-  mainDeck:       buildMainDeck(),
-  runeDeck:       RUNE_IDS,
+  legendId:    'ogs-019-024' as CardDefId,
+  championId:  'ogs-023-024' as CardDefId,
+  battlefields: ['unl-206-219', 'sfd-207-221', 'unl-207-219'] as [CardDefId, CardDefId, CardDefId],
+  mainDeck:    buildMainDeck(),
+  runeDeck:    RUNE_IDS,
 }
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
@@ -106,7 +104,7 @@ function logEvents(label: string, events: GameEvent[]): void {
   for (const e of events) console.log(`  ${e.type}`)
 }
 
-function printBoard(state: GameState, playerId: PlayerId, cat: typeof catalog): void {
+function printBoard(state: GameState, playerId: PlayerId, cat: CardCatalog): void {
   const view = viewFor(state, playerId, cat)
   const runesCharged = view.self.runePool.filter(s => s.filled).length
   const bfControl = Object.entries(state.battlefields)
@@ -122,7 +120,7 @@ function printBoard(state: GameState, playerId: PlayerId, cat: typeof catalog): 
 
 function advanceTurnStart(
   state: GameState,
-  cat: typeof catalog,
+  cat: CardCatalog,
 ): { state: GameState; events: GameEvent[] } {
   const allEvents: GameEvent[] = []
   const query = createRulesQuery(state, cat)
@@ -227,7 +225,8 @@ console.log('═'.repeat(60))
   const hand = state.players[firstPlayer]?.hand ?? []
   const cardId = hand[0]
   if (cardId) {
-    const def = catalog.find(state.cards[cardId]?.defId ?? '' as CardDefId)
+    const defId = state.cards[cardId]?.defId
+    const def = defId ? catalog.find(defId) : null
     console.log(`\n${firstPlayer} plays ${def?.name ?? cardId} from hand`)
 
     const r = submit(state, { type: 'PlayCard', playerId: firstPlayer, cardId, targets: undefined }, catalog)
@@ -278,7 +277,8 @@ console.log('═'.repeat(60))
   const hand = state.players[secondPlayer]?.hand ?? []
   const cardId = hand[0]
   if (cardId) {
-    const def = catalog.find(state.cards[cardId]?.defId ?? '' as CardDefId)
+    const defId = state.cards[cardId]?.defId
+    const def = defId ? catalog.find(defId) : null
     console.log(`\n${secondPlayer} plays ${def?.name ?? cardId} from hand`)
 
     const r = submit(state, { type: 'PlayCard', playerId: secondPlayer, cardId, targets: undefined }, catalog)
@@ -337,7 +337,8 @@ console.log('═'.repeat(60))
   const hand = state.players[firstPlayer]?.hand ?? []
   const cardId = hand[0]
   if (cardId) {
-    const def = catalog.find(state.cards[cardId]?.defId ?? '' as CardDefId)
+    const defId = state.cards[cardId]?.defId
+    const def = defId ? catalog.find(defId) : null
     console.log(`\n${firstPlayer} plays ${def?.name ?? cardId} — opens chain`)
 
     const r = submit(state, { type: 'PlayCard', playerId: firstPlayer, cardId, targets: undefined }, catalog)
@@ -402,8 +403,10 @@ console.log('═'.repeat(60))
       },
     }
 
-    const p1CardName = catalog.find(state.cards[p1CombatCard]?.defId ?? '' as CardDefId)?.name ?? p1CombatCard
-    const p2CardName = catalog.find(state.cards[p2CombatCard]?.defId ?? '' as CardDefId)?.name ?? p2CombatCard
+    const p1DefId = state.cards[p1CombatCard]?.defId
+    const p2DefId = state.cards[p2CombatCard]?.defId
+    const p1CardName = (p1DefId ? catalog.find(p1DefId)?.name : null) ?? p1CombatCard
+    const p2CardName = (p2DefId ? catalog.find(p2DefId)?.name : null) ?? p2CombatCard
     console.log(`\n[combat setup] ${bfAria}: ${p1CardName} (${firstPlayer}) vs ${p2CardName} (${secondPlayer})`)
 
     // resolveCombat: active player = secondPlayer is the contesting player.

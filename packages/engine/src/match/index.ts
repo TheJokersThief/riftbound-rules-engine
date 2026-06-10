@@ -1,5 +1,4 @@
-import type { PlayerId } from '@thejokersthief/riftbound-protocol'
-import type { Action, PlayerView, GameEvent } from '@thejokersthief/riftbound-protocol'
+import type { PlayerId, Action, PlayerView, GameEvent, MatchId, CardDefId } from '@thejokersthief/riftbound-protocol'
 import type { GameState } from '../state/types.js'
 import type { DeckConfig, MatchState } from './state.js'
 
@@ -30,11 +29,11 @@ export function createMatch(
     seed: config.seed,
   })
   return {
-    matchId: `match-${config.seed}` as import('@thejokersthief/riftbound-protocol').MatchId,
+    matchId: `match-${config.seed}` as MatchId,
     playerIds: config.players,
     decks: config.decks,
     gameWins: { [config.players[0]]: 0, [config.players[1]]: 0 } as Record<PlayerId, number>,
-    usedBattlefields: { [config.players[0]]: [], [config.players[1]]: [] } as Record<PlayerId, import('@thejokersthief/riftbound-protocol').CardDefId[]>,
+    usedBattlefields: { [config.players[0]]: [], [config.players[1]]: [] } as Record<PlayerId, CardDefId[]>,
     currentGame: gameState,
     status: 'playing',
     winner: null,

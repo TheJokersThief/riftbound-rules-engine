@@ -6,5 +6,5 @@ export function serialize(state: GameState): string {
 }
 
 export function deserialize(s: string): GameState {
-  return GameStateSchema.parse(JSON.parse(s)) as GameState
+  return GameStateSchema.parse(JSON.parse(s))
 }

@@ -1,0 +1,4 @@
+
+> @thejokersthief/riftbound-effect-ir@0.0.1 typecheck /Users/evansmith/Documents/github/riftbound-rules-engine/packages/effect-ir
+> tsc --noEmit -p tsconfig.json
+

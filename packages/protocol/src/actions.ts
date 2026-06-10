@@ -11,7 +11,6 @@ export const DamageAssignmentSchema = z.object({
 })
 export type DamageAssignment = z.infer<typeof DamageAssignmentSchema>
 
-// Action variants
 const ChooseBattlefieldActionSchema = z.object({ type: z.literal('ChooseBattlefield'), playerId: PlayerIdSchema, cardDefId: CardDefIdSchema })
 const KeepHandActionSchema = z.object({ type: z.literal('KeepHand'), playerId: PlayerIdSchema })
 const MulliganActionSchema = z.object({ type: z.literal('Mulligan'), playerId: PlayerIdSchema })

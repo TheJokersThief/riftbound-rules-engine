@@ -15,26 +15,23 @@ type BattlefieldState = NonNullable<_Battlefields[keyof _Battlefields]>
 // Hard-coded card IDs from data/cards.json
 // ---------------------------------------------------------------------------
 
-const LEGEND_ID = 'leg001' as CardDefId
-const CHAMPION_ID = 'chm001' as CardDefId
+const LEGEND_ID = 'ogs-017-024' as CardDefId
+const CHAMPION_ID = 'ogs-021-024' as CardDefId
 const BATTLEFIELD_IDS: [CardDefId, CardDefId, CardDefId] = [
-  'btf001' as CardDefId,
-  'btf002' as CardDefId,
-  'btf003' as CardDefId,
+  'unl-t01' as CardDefId,
+  'unl-t03' as CardDefId,
+  'unl-205-219' as CardDefId,
 ]
 const RUNE_IDS: CardDefId[] = [
-  'rne001', 'rne002', 'rne003', 'rne004', 'rne005',
-  'rne006', 'rne007', 'rne008', 'rne009', 'rne010',
-].map(id => id as CardDefId)
+  'ogn-007-298', 'ogn-007a-298', 'ogn-042-298', 'ogn-042a-298', 'ogn-089a-298',
+  'ogn-089-298', 'ogn-126a-298', 'ogn-126-298', 'ogn-166-298', 'ogn-166a-298',
+] as CardDefId[]
 
-// Mix of unit, gear, and spell IDs to fill a 40-card main deck
 const MAIN_DECK_POOL: CardDefId[] = [
-  'unt001', 'unt002', 'unt003', 'unt004', 'unt005',
-  'unt006', 'unt007', 'unt008', 'unt009', 'unt010',
-  'unt011', 'unt012', 'unt013', 'unt014', 'unt015',
-  'gea001', 'gea002', 'gea003', 'gea004',
-  'spl001', 'spl002', 'spl003', 'spl004', 'spl005', 'spl006',
-].map(id => id as CardDefId)
+  'ogn-001-298', 'ogs-001-024', 'unl-001-219', 'sfd-002-221', 'ogn-002-298',
+  'unl-002-219', 'ogn-003-298', 'unl-003-219', 'ogs-004-024', 'unl-004-219',
+  'ogs-005-024', 'unl-005-219', 'ogs-006-024', 'sfd-006-221', 'ogn-004-298',
+] as CardDefId[]
 
 function buildDefaultMainDeck(): CardDefId[] {
   const deck: CardDefId[] = []

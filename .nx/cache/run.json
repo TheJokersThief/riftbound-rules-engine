@@ -1,0 +1,87 @@
+{
+  "run": {
+    "command": "nx run-many --target=typecheck --all",
+    "startTime": "2026-06-09T18:15:53.781Z",
+    "endTime": "2026-06-09T18:15:53.816Z",
+    "inner": false
+  },
+  "tasks": [
+    {
+      "taskId": "@thejokersthief/riftbound-protocol:typecheck",
+      "target": "typecheck",
+      "projectName": "@thejokersthief/riftbound-protocol",
+      "hash": "13021510771546715743",
+      "startTime": "2026-06-09T18:15:53.813Z",
+      "endTime": "2026-06-09T18:15:53.814Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "@thejokersthief/riftbound-effect-ir:typecheck",
+      "target": "typecheck",
+      "projectName": "@thejokersthief/riftbound-effect-ir",
+      "hash": "9539673042620667752",
+      "startTime": "2026-06-09T18:15:53.813Z",
+      "endTime": "2026-06-09T18:15:53.814Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "@thejokersthief/riftbound-card-catalog:typecheck",
+      "target": "typecheck",
+      "projectName": "@thejokersthief/riftbound-card-catalog",
+      "hash": "15885906593681152232",
+      "startTime": "2026-06-09T18:15:53.813Z",
+      "endTime": "2026-06-09T18:15:53.814Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "@thejokersthief/riftbound-test-helpers:typecheck",
+      "target": "typecheck",
+      "projectName": "@thejokersthief/riftbound-test-helpers",
+      "hash": "14747741924279722350",
+      "startTime": "2026-06-09T18:15:53.814Z",
+      "endTime": "2026-06-09T18:15:53.815Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "@thejokersthief/riftbound-engine:typecheck",
+      "target": "typecheck",
+      "projectName": "@thejokersthief/riftbound-engine",
+      "hash": "10516767835407586541",
+      "startTime": "2026-06-09T18:15:53.815Z",
+      "endTime": "2026-06-09T18:15:53.815Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "@thejokersthief/riftbound-example:typecheck",
+      "target": "typecheck",
+      "projectName": "@thejokersthief/riftbound-example",
+      "hash": "7393774258010711121",
+      "startTime": "2026-06-09T18:15:53.815Z",
+      "endTime": "2026-06-09T18:15:53.815Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    },
+    {
+      "taskId": "@thejokersthief/riftbound-card-compiler:typecheck",
+      "target": "typecheck",
+      "projectName": "@thejokersthief/riftbound-card-compiler",
+      "hash": "5203962006566132754",
+      "startTime": "2026-06-09T18:15:53.815Z",
+      "endTime": "2026-06-09T18:15:53.815Z",
+      "params": "",
+      "cacheStatus": "local-cache-hit",
+      "status": 0
+    }
+  ]
+}

@@ -29,7 +29,6 @@ export function resolveCombat(
   const allEvents: GameEvent[] = []
   const contestingPlayerId = state.activePlayerId
 
-  // Get attacker and defender unit IDs
   const attackers: CardId[] = bf.units.filter(id => {
     const card = state.cards[id]
     return card?.ownerId === contestingPlayerId
@@ -44,15 +43,11 @@ export function resolveCombat(
     return { state, events: [] }
   }
 
-  // Build default damage assignments
   const assignments = buildDefaultAssignments(attackers, defenders, query)
-
-  // Apply damage assignments
   const damageResult = applyDamageAssignments(state, assignments)
   state = damageResult.state
   allEvents.push(...damageResult.events)
 
-  // Track cumulative damage per target from DamageDealt events
   const damageDealt = new Map<CardId, number>()
   for (const event of damageResult.events) {
     if (event.type === 'DamageDealt') {
@@ -61,12 +56,10 @@ export function resolveCombat(
     }
   }
 
-  // Resolve deaths
   const deathResult = resolveDeaths(state, damageDealt, query, programs, catalog)
   state = deathResult.state
   allEvents.push(...deathResult.events)
 
-  // Resolve control
   const controlResult = resolveControl(state, battlefieldId, contestingPlayerId)
   state = controlResult.state
   allEvents.push(...controlResult.events)

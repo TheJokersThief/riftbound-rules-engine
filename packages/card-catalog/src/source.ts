@@ -1,14 +1,11 @@
 import { readFile } from 'fs/promises'
 import type { CardDefId } from '@thejokersthief/riftbound-protocol'
-import { CardDefinition, CardSnapshotSchema, CardType, DeckZone } from './types.js'
+import type { CardDefinition, CardType, DeckZone } from './types.js'
+import { CardSnapshotSchema } from './types.js'
 
 export interface CardDataSource {
   load(): Promise<CardDefinition[]>
 }
-
-// ---------------------------------------------------------------------------
-// Raw API shape from https://riftdex.gg/api/v1/cards
-// ---------------------------------------------------------------------------
 
 interface RiftdexCard {
   id: string
@@ -84,13 +81,9 @@ function normalizeCard(raw: RiftdexCard): CardDefinition | null {
         ? { energy: raw.energyCost, power: raw.power ?? 0, runes: [] }
         : null,
     deckZone: DECK_ZONE_MAP[cardType],
-    keywords: raw.tags ?? [],
+    keywords: raw.tags,
   }
 }
-
-// ---------------------------------------------------------------------------
-// LiveCardDataSource — fetches all pages from the riftdex endpoint
-// ---------------------------------------------------------------------------
 
 export class LiveCardDataSource implements CardDataSource {
   private readonly endpoint: string

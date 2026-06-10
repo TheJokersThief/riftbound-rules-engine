@@ -1,5 +1,4 @@
-import type { GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { BattlefieldId } from '@thejokersthief/riftbound-protocol'
+import type { GameEvent, BattlefieldId } from '@thejokersthief/riftbound-protocol'
 import type { GameState } from '../state/types.js'
 import type { RulesQuery } from '../rules-query/index.js'
 import { fold } from '../state/fold.js'
@@ -14,7 +13,6 @@ export function runStartPhase(
 ): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
 
-  // 1. Emit TurnStarted
   const turnStarted: GameEvent = {
     type: 'TurnStarted',
     turnNumber: state.turnNumber,
@@ -23,19 +21,16 @@ export function runStartPhase(
   events.push(turnStarted)
   state = fold(state, turnStarted)
 
-  // 2. PhaseStarted('Start')
   const phaseStarted: GameEvent = { type: 'PhaseStarted', phase: 'Start' }
   events.push(phaseStarted)
   state = fold(state, phaseStarted)
 
-  // 3. Snapshot holdEligible: battlefields controlled by the active player
   const holdEligibleIds = (
     Object.keys(state.battlefields) as BattlefieldId[]
   ).filter(bfId => state.battlefields[bfId]?.controllerId === state.activePlayerId)
 
   state = { ...state, holdEligible: holdEligibleIds }
 
-  // 4. Ready all exhausted cards owned by the active player
   const activePlayerId = state.activePlayerId
   for (const card of Object.values(state.cards)) {
     if (card && card.ownerId === activePlayerId && card.exhausted) {
@@ -57,15 +52,12 @@ export function runChannelPhase(
 ): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
 
-  // Emit PhaseStarted('Channel')
   const phaseStarted: GameEvent = { type: 'PhaseStarted', phase: 'Channel' }
   events.push(phaseStarted)
   state = fold(state, phaseStarted)
 
-  // Channel runes
   state = channelOneRune(state, events)
 
-  // If firstTurnSecondPlayer, channel one more rune and clear flag
   if (state.firstTurnSecondPlayer) {
     state = channelOneRune(state, events)
     state = { ...state, firstTurnSecondPlayer: false }
@@ -87,7 +79,6 @@ function channelOneRune(
 
   const topCardId = runeDeck[0]!
 
-  // Emit the event (for the log)
   const runeChanneled: GameEvent = {
     type: 'RuneChanneled',
     playerId,
@@ -160,7 +151,6 @@ export function advanceTurnEnd(
 ): { state: GameState; events: GameEvent[] } {
   const events: GameEvent[] = []
 
-  // Emit TurnEnded
   const turnEnded: GameEvent = {
     type: 'TurnEnded',
     turnNumber: state.turnNumber,
@@ -169,7 +159,6 @@ export function advanceTurnEnd(
   events.push(turnEnded)
   state = fold(state, turnEnded)
 
-  // Advance to the other player
   const [p1, p2] = state.playerIds
   const nextPlayerId = state.activePlayerId === p1 ? p2 : p1
 

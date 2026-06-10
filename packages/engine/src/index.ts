@@ -9,7 +9,7 @@ import type {
   GameEvent,
 } from '@thejokersthief/riftbound-protocol'
 import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
-import type { GameState, CardInstance } from './state/types.js'
+import type { GameState, CardInstance, PlayerState, BattlefieldState } from './state/types.js'
 import type { DeckConfig, MatchState } from './match/state.js'
 import type { GameEngineFunctions } from './match/index.js'
 import { nextInt, shuffle } from './rng.js'
@@ -57,7 +57,6 @@ export function createGame(config: {
 }): GameState {
   const [p1, p2] = config.players
 
-  // Validate decks
   for (const playerId of config.players) {
     const deck = config.decks[playerId]
     if (!deck) throw new Error(`Missing deck for player ${playerId}`)
@@ -101,7 +100,6 @@ export function createGame(config: {
 
   const allCards: Record<CardId, CardInstance> = {}
 
-  // Build cards for each player
   interface PlayerCards {
     mainDeckIds: CardId[]
     runeDeckIds: CardId[]
@@ -112,29 +110,24 @@ export function createGame(config: {
   function buildPlayerCards(playerId: PlayerId): PlayerCards {
     const deck = config.decks[playerId]!
 
-    // Main deck
     const mainDeckIds: CardId[] = deck.mainDeck.map(defId => {
       const card = makeCard(defId, playerId)
       allCards[card.id] = card
       return card.id
     })
 
-    // Rune deck
     const runeDeckIds: CardId[] = deck.runeDeck.map(defId => {
       const card = makeCard(defId, playerId)
       allCards[card.id] = card
       return card.id
     })
 
-    // Legend
     const legendCard = makeCard(deck.legendId, playerId)
     allCards[legendCard.id] = legendCard
 
-    // Champion
     const championCard = makeCard(deck.championId, playerId)
     allCards[championCard.id] = championCard
 
-    // Battlefield cards (all 3 created as instances)
     for (const bfDefId of deck.battlefields) {
       const bfCard = makeCard(bfDefId, playerId)
       allCards[bfCard.id] = bfCard
@@ -151,7 +144,6 @@ export function createGame(config: {
   const p1Cards = buildPlayerCards(p1)
   const p2Cards = buildPlayerCards(p2)
 
-  // Shuffle main decks
   const shuffleP1 = shuffle(p1Cards.mainDeckIds, rng)
   rng = shuffleP1.next
   const p1ShuffledDeck = shuffleP1.result
@@ -160,18 +152,15 @@ export function createGame(config: {
   rng = shuffleP2.next
   const p2ShuffledDeck = shuffleP2.result
 
-  // Determine first player
   const firstPlayerResult = nextInt(rng, 2)
   rng = firstPlayerResult.next
   const firstPlayerId = config.players[firstPlayerResult.value]!
 
-  // Draw opening hands (5 cards)
   const p1Hand = p1ShuffledDeck.slice(0, 5)
   const p1Deck = p1ShuffledDeck.slice(5)
   const p2Hand = p2ShuffledDeck.slice(0, 5)
   const p2Deck = p2ShuffledDeck.slice(5)
 
-  // Create battlefield instances from first battlefield in each player's config
   const p1BfId = `bf-${p1}` as BattlefieldId
   const p2BfId = `bf-${p2}` as BattlefieldId
 
@@ -212,11 +201,11 @@ export function createGame(config: {
         resources: { energy: 3, power: 2 },
         points: 0,
       },
-    } as Record<PlayerId, import('./state/types.js').PlayerState>,
+    } as Record<PlayerId, PlayerState>,
     battlefields: {
       [p1BfId]: { id: p1BfId, cardId: p1BfCard.id, controllerId: p1, units: [] },
       [p2BfId]: { id: p2BfId, cardId: p2BfCard.id, controllerId: p2, units: [] },
-    } as Record<BattlefieldId, import('./state/types.js').BattlefieldState>,
+    } as Record<BattlefieldId, BattlefieldState>,
     turnNumber: 1,
     activePlayerId: firstPlayerId,
     phase: 'Start',
@@ -228,7 +217,7 @@ export function createGame(config: {
       handSize: 5,
     },
     rng,
-    scoredThisTurn: {} as Record<PlayerId, BattlefieldId[]>,
+    scoredThisTurn: {},
     status: 'setup',
     winner: null,
     hotQueue: [],
@@ -248,12 +237,10 @@ export function submit(
   action: Action,
   catalog: CardCatalog,
 ): { state: GameState; events: GameEvent[] } {
-  // Validate player
   if (!state.playerIds.includes(action.playerId)) {
     throw new Error(`Unknown player ${action.playerId}`)
   }
 
-  // Status dispatch
   if (state.status === 'ended') {
     throw new Error('Cannot submit action to an ended game')
   }
@@ -264,7 +251,6 @@ export function submit(
         return { state: { ...state, status: 'playing', pendingDecision: null }, events: [] }
 
       case 'Mulligan': {
-        // Simplified: shuffle hand back, draw new 5
         const player = state.players[action.playerId]
         if (!player) return { state: { ...state, pendingDecision: null, status: 'playing' }, events: [] }
 
@@ -298,7 +284,6 @@ export function submit(
     }
   }
 
-  // status === 'playing'
   const query = createRulesQuery(state, catalog)
 
   switch (action.type) {
@@ -370,7 +355,6 @@ export function legalActions(
   playerId: PlayerId,
   catalog: CardCatalog,
 ): Action[] {
-  // Branch A: pending decision
   if (state.pendingDecision !== null) {
     if (state.pendingDecision.playerId !== playerId) return []
 
@@ -439,7 +423,6 @@ export function legalActions(
     }
   }
 
-  // Branch B: no pending decision
   if (playerId !== state.activePlayerId) return []
 
   const actions: Action[] = []
@@ -448,15 +431,12 @@ export function legalActions(
 
   if (!player) return []
 
-  // PlayCard
   actions.push(...getPlayableCards(state, playerId, query))
 
-  // EndTurn — available during main phase when chain is closed
   if (state.phase === 'Main' && !state.chain.isOpen) {
     actions.push({ type: 'EndTurn', playerId })
   }
 
-  // PassPriority — available during main phase
   if (state.phase === 'Main') {
     actions.push({ type: 'PassPriority', playerId })
   }
