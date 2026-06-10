@@ -88,8 +88,8 @@ describe('SnapshotCardDataSource', () => {
 describe('createCardCatalog with real snapshot', () => {
   it('get() returns a known card by ID', async () => {
     const catalog = await createCardCatalog(defaultSnapshotSource)
-    const card = catalog.get('unt001' as CardDefId)
-    expect(card.name).toBe('Ashguard Sentinel')
+    const card = catalog.get('ogn-001-298' as CardDefId)
+    expect(card.name).toBe('Blazing Scorcher')
   })
 
   it('find() returns null for an unknown ID', async () => {
