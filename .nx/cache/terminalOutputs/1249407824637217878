@@ -1,4 +1,0 @@
-
-> @thejokersthief/riftbound-test-helpers@0.0.1 typecheck /Users/evansmith/Documents/github/riftbound-rules-engine/packages/test-helpers
-> tsc --noEmit -p tsconfig.json
-

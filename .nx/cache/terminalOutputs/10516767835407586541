@@ -1,4 +1,0 @@
-
-> @thejokersthief/riftbound-engine@0.0.1 typecheck /Users/evansmith/Documents/github/riftbound-rules-engine/packages/engine
-> tsc --noEmit -p tsconfig.json
-
