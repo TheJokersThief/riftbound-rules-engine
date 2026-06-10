@@ -1,6 +1,6 @@
-import type { BattlefieldId, GameEvent } from '@thejokersthief/riftbound-protocol'
-import { fold } from '../state/fold.js'
-import type { GameState } from '../state/types.js'
+import type { BattlefieldId, GameEvent } from "@thejokersthief/riftbound-protocol";
+import { fold } from "../state/fold.js";
+import type { GameState } from "../state/types.js";
 
 // ---------------------------------------------------------------------------
 // openShowdown
@@ -9,24 +9,24 @@ import type { GameState } from '../state/types.js'
 export function openShowdown(
   state: GameState,
   battlefieldId: BattlefieldId,
-  kind: 'Combat' | 'Control'
+  kind: "Combat" | "Control",
 ): { state: GameState; events: GameEvent[] } {
-  const event: GameEvent = { type: 'ShowdownOpened', battlefieldId, kind }
-  state = fold(state, event)
+  const event: GameEvent = { type: "ShowdownOpened", battlefieldId, kind };
+  state = fold(state, event);
 
-  const focusPlayerId = state.activePlayerId
-  state = { ...state, chain: { ...state.chain, focus: focusPlayerId } }
+  const focusPlayerId = state.activePlayerId;
+  state = { ...state, chain: { ...state.chain, focus: focusPlayerId } };
 
   state = {
     ...state,
     pendingDecision: {
-      type: 'FocusWindow',
+      type: "FocusWindow",
       playerId: focusPlayerId,
       battlefieldId,
     },
-  }
+  };
 
-  return { state, events: [event] }
+  return { state, events: [event] };
 }
 
 // ---------------------------------------------------------------------------
@@ -34,14 +34,14 @@ export function openShowdown(
 // ---------------------------------------------------------------------------
 
 export function closeShowdown(state: GameState): { state: GameState; events: GameEvent[] } {
-  const battlefieldId = state.chain.showdown?.battlefieldId
+  const battlefieldId = state.chain.showdown?.battlefieldId;
   if (!battlefieldId) {
-    return { state, events: [] }
+    return { state, events: [] };
   }
 
-  const event: GameEvent = { type: 'ShowdownClosed', battlefieldId }
-  state = fold(state, event)
-  state = { ...state, chain: { ...state.chain, focus: null } }
+  const event: GameEvent = { type: "ShowdownClosed", battlefieldId };
+  state = fold(state, event);
+  state = { ...state, chain: { ...state.chain, focus: null } };
 
-  return { state, events: [event] }
+  return { state, events: [event] };
 }

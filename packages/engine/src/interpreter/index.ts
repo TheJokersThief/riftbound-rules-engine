@@ -1,42 +1,42 @@
-import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
-import type { ActionNode, EffectNode } from '@thejokersthief/riftbound-effect-ir'
-import type { GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { RulesQuery } from '../rules-query/index.js'
-import type { EffectFrame } from '../state/stack.js'
-import type { GameState } from '../state/types.js'
-import { executeAction } from './actions.js'
-import { dispatchNode } from './nodes.js'
+import type { CardCatalog } from "@thejokersthief/riftbound-card-catalog";
+import type { ActionNode, EffectNode } from "@thejokersthief/riftbound-effect-ir";
+import type { GameEvent } from "@thejokersthief/riftbound-protocol";
+import type { RulesQuery } from "../rules-query/index.js";
+import type { EffectFrame } from "../state/stack.js";
+import type { GameState } from "../state/types.js";
+import { executeAction } from "./actions.js";
+import { dispatchNode } from "./nodes.js";
 
 // ---------------------------------------------------------------------------
 // Action type discriminator set + type predicate
 // ---------------------------------------------------------------------------
 
 const ACTION_TYPES = new Set([
-  'Deal',
-  'Draw',
-  'Discard',
-  'Move',
-  'Recall',
-  'ReturnToHand',
-  'Buff',
-  'Ready',
-  'Exhaust',
-  'Kill',
-  'Banish',
-  'CreateToken',
-  'Counter',
-  'AddResource',
-  'GainXP',
-  'SpendXP',
-  'Reveal',
-  'Recycle',
-  'GiveMight',
-  'GrantKeyword',
-  'TakeExtraTurn',
-])
+  "Deal",
+  "Draw",
+  "Discard",
+  "Move",
+  "Recall",
+  "ReturnToHand",
+  "Buff",
+  "Ready",
+  "Exhaust",
+  "Kill",
+  "Banish",
+  "CreateToken",
+  "Counter",
+  "AddResource",
+  "GainXP",
+  "SpendXP",
+  "Reveal",
+  "Recycle",
+  "GiveMight",
+  "GrantKeyword",
+  "TakeExtraTurn",
+]);
 
 function isActionNode(node: EffectNode): node is ActionNode {
-  return ACTION_TYPES.has(node.type)
+  return ACTION_TYPES.has(node.type);
 }
 
 // ---------------------------------------------------------------------------
@@ -46,40 +46,40 @@ function isActionNode(node: EffectNode): node is ActionNode {
 export function step(
   state: GameState,
   query: RulesQuery,
-  catalog: CardCatalog
+  catalog: CardCatalog,
 ): { state: GameState; events: GameEvent[] } {
-  const stack = state.resolutionStack
-  if (stack.length === 0) return { state, events: [] }
+  const stack = state.resolutionStack;
+  if (stack.length === 0) return { state, events: [] };
 
-  const topFrame = stack[stack.length - 1]!
+  const topFrame = stack[stack.length - 1]!;
 
-  if (topFrame.type !== 'Effect') {
+  if (topFrame.type !== "Effect") {
     // ChainFrame, CombatFrame, DecisionFrame — not handled here
-    return { state, events: [] }
+    return { state, events: [] };
   }
 
-  const frame = topFrame
+  const frame = topFrame;
 
   if (frame.remaining.length === 0) {
     // Pop the exhausted frame
-    const newStack = stack.slice(0, -1)
-    return { state: { ...state, resolutionStack: newStack }, events: [] }
+    const newStack = stack.slice(0, -1);
+    return { state: { ...state, resolutionStack: newStack }, events: [] };
   }
 
-  const [head, ...rest] = frame.remaining
+  const [head, ...rest] = frame.remaining;
   // head is guaranteed non-undefined because we checked length above
-  const headNode = head!
-  const updatedFrame: EffectFrame = { ...frame, remaining: rest }
-  const stackWithUpdated = [...stack.slice(0, -1), updatedFrame]
-  const stateWithUpdatedFrame: GameState = { ...state, resolutionStack: stackWithUpdated }
+  const headNode = head!;
+  const updatedFrame: EffectFrame = { ...frame, remaining: rest };
+  const stackWithUpdated = [...stack.slice(0, -1), updatedFrame];
+  const stateWithUpdatedFrame: GameState = { ...state, resolutionStack: stackWithUpdated };
 
   if (isActionNode(headNode)) {
-    return executeAction(headNode, updatedFrame, stateWithUpdatedFrame, query, catalog)
+    return executeAction(headNode, updatedFrame, stateWithUpdatedFrame, query, catalog);
   }
 
-  return dispatchNode(headNode, updatedFrame, stateWithUpdatedFrame, query, catalog)
+  return dispatchNode(headNode, updatedFrame, stateWithUpdatedFrame, query, catalog);
 }
 
-export { resolveSelector, evalCondition, evalNumberExpr, resolvePlayerRef } from './selectors.js'
-export { executeAction } from './actions.js'
-export { dispatchNode } from './nodes.js'
+export { resolveSelector, evalCondition, evalNumberExpr, resolvePlayerRef } from "./selectors.js";
+export { executeAction } from "./actions.js";
+export { dispatchNode } from "./nodes.js";

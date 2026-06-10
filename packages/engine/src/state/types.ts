@@ -1,4 +1,4 @@
-import { TriggerEventSchema } from '@thejokersthief/riftbound-effect-ir'
+import { TriggerEventSchema } from "@thejokersthief/riftbound-effect-ir";
 import {
   BattlefieldIdSchema,
   CardDefIdSchema,
@@ -6,16 +6,16 @@ import {
   GameIdSchema,
   MatchIdSchema,
   PlayerIdSchema,
-} from '@thejokersthief/riftbound-protocol'
-import { DecisionRequestSchema, PhaseSchema } from '@thejokersthief/riftbound-protocol'
-import { z } from 'zod'
-import { StackFrameSchema } from './stack.js'
+} from "@thejokersthief/riftbound-protocol";
+import { DecisionRequestSchema, PhaseSchema } from "@thejokersthief/riftbound-protocol";
+import { z } from "zod";
+import { StackFrameSchema } from "./stack.js";
 
 export const RuneSlotSchema = z.object({
   filled: z.boolean(),
   runeCardId: CardIdSchema.nullable(),
-})
-export type RuneSlot = z.infer<typeof RuneSlotSchema>
+});
+export type RuneSlot = z.infer<typeof RuneSlotSchema>;
 
 export const PlayerStateSchema = z.object({
   hand: z.array(CardIdSchema),
@@ -27,8 +27,8 @@ export const PlayerStateSchema = z.object({
   base: z.array(CardIdSchema),
   resources: z.object({ energy: z.number().int(), power: z.number().int() }),
   points: z.number().int().nonnegative(),
-})
-export type PlayerState = z.infer<typeof PlayerStateSchema>
+});
+export type PlayerState = z.infer<typeof PlayerStateSchema>;
 
 export const CardInstanceSchema = z.object({
   id: CardIdSchema,
@@ -40,16 +40,16 @@ export const CardInstanceSchema = z.object({
   xp: z.number().int().nonnegative(),
   counters: z.record(z.string(), z.number().int()),
   faceDown: z.boolean(),
-})
-export type CardInstance = z.infer<typeof CardInstanceSchema>
+});
+export type CardInstance = z.infer<typeof CardInstanceSchema>;
 
 export const BattlefieldStateSchema = z.object({
   id: BattlefieldIdSchema,
   cardId: CardIdSchema,
   controllerId: PlayerIdSchema.nullable(),
   units: z.array(CardIdSchema),
-})
-export type BattlefieldState = z.infer<typeof BattlefieldStateSchema>
+});
+export type BattlefieldState = z.infer<typeof BattlefieldStateSchema>;
 
 export const ChainItemSchema = z.object({
   id: z.string(),
@@ -58,14 +58,14 @@ export const ChainItemSchema = z.object({
   controller: PlayerIdSchema,
   targets: z.array(CardIdSchema),
   resolved: z.boolean(),
-})
-export type ChainItem = z.infer<typeof ChainItemSchema>
+});
+export type ChainItem = z.infer<typeof ChainItemSchema>;
 
 export const ShowdownStateSchema = z.object({
   battlefieldId: BattlefieldIdSchema,
-  kind: z.enum(['Combat', 'Control']),
-})
-export type ShowdownState = z.infer<typeof ShowdownStateSchema>
+  kind: z.enum(["Combat", "Control"]),
+});
+export type ShowdownState = z.infer<typeof ShowdownStateSchema>;
 
 export const ChainStateSchema = z.object({
   isOpen: z.boolean(),
@@ -73,8 +73,8 @@ export const ChainStateSchema = z.object({
   priority: PlayerIdSchema.nullable(),
   focus: PlayerIdSchema.nullable(),
   showdown: ShowdownStateSchema.nullable(),
-})
-export type ChainState = z.infer<typeof ChainStateSchema>
+});
+export type ChainState = z.infer<typeof ChainStateSchema>;
 
 export const TriggeredAbilityTaskSchema = z.object({
   sourceId: CardIdSchema,
@@ -84,8 +84,8 @@ export const TriggeredAbilityTaskSchema = z.object({
     triggerEvent: TriggerEventSchema,
     targets: z.array(CardIdSchema).optional(),
   }),
-})
-export type TriggeredAbilityTask = z.infer<typeof TriggeredAbilityTaskSchema>
+});
+export type TriggeredAbilityTask = z.infer<typeof TriggeredAbilityTaskSchema>;
 
 export const GameStateSchema = z.object({
   gameId: GameIdSchema,
@@ -102,10 +102,10 @@ export const GameStateSchema = z.object({
   pendingDecision: DecisionRequestSchema.nullable(),
   rng: z.object({ seed: z.number().int() }),
   scoredThisTurn: z.record(PlayerIdSchema, z.array(BattlefieldIdSchema)),
-  status: z.enum(['setup', 'playing', 'ended']),
+  status: z.enum(["setup", "playing", "ended"]),
   winner: PlayerIdSchema.nullable(),
   hotQueue: z.array(TriggeredAbilityTaskSchema),
   holdEligible: z.array(BattlefieldIdSchema),
   firstTurnSecondPlayer: z.boolean(),
-})
-export type GameState = z.infer<typeof GameStateSchema>
+});
+export type GameState = z.infer<typeof GameStateSchema>;

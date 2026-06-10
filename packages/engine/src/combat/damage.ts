@@ -1,8 +1,13 @@
-import type { BattlefieldId, CardId, GameEvent, PlayerId } from '@thejokersthief/riftbound-protocol'
-import type { RulesQuery } from '../rules-query/index.js'
-import { fold } from '../state/fold.js'
-import type { DamageAssignment } from '../state/stack.js'
-import type { GameState } from '../state/types.js'
+import type {
+  BattlefieldId,
+  CardId,
+  GameEvent,
+  PlayerId,
+} from "@thejokersthief/riftbound-protocol";
+import type { RulesQuery } from "../rules-query/index.js";
+import { fold } from "../state/fold.js";
+import type { DamageAssignment } from "../state/stack.js";
+import type { GameState } from "../state/types.js";
 
 // ---------------------------------------------------------------------------
 // applyDamageAssignments
@@ -10,23 +15,23 @@ import type { GameState } from '../state/types.js'
 
 export function applyDamageAssignments(
   state: GameState,
-  assignments: DamageAssignment[]
+  assignments: DamageAssignment[],
 ): { state: GameState; events: GameEvent[] } {
-  const events: GameEvent[] = []
+  const events: GameEvent[] = [];
 
   for (const assignment of assignments) {
     const event: GameEvent = {
-      type: 'DamageDealt',
+      type: "DamageDealt",
       sourceId: assignment.attackerId,
       targetId: assignment.targetId,
       amount: assignment.amount,
       bonus: 0,
-    }
-    events.push(event)
-    state = fold(state, event)
+    };
+    events.push(event);
+    state = fold(state, event);
   }
 
-  return { state, events }
+  return { state, events };
 }
 
 // ---------------------------------------------------------------------------
@@ -37,22 +42,22 @@ export function computeDamagePool(
   battlefieldId: BattlefieldId,
   contestingPlayerId: PlayerId,
   state: GameState,
-  query: RulesQuery
+  query: RulesQuery,
 ): { attackers: CardId[]; totalDamage: number } {
-  const bf = state.battlefields[battlefieldId]
-  if (!bf) return { attackers: [], totalDamage: 0 }
+  const bf = state.battlefields[battlefieldId];
+  if (!bf) return { attackers: [], totalDamage: 0 };
 
   const attackers = bf.units.filter((id) => {
-    const card = state.cards[id]
-    return card?.ownerId === contestingPlayerId
-  })
+    const card = state.cards[id];
+    return card?.ownerId === contestingPlayerId;
+  });
 
-  let totalDamage = 0
+  let totalDamage = 0;
   for (const id of attackers) {
-    totalDamage += query.mightOf(id)
+    totalDamage += query.mightOf(id);
   }
 
-  return { attackers, totalDamage }
+  return { attackers, totalDamage };
 }
 
 // ---------------------------------------------------------------------------
@@ -62,25 +67,25 @@ export function computeDamagePool(
 export function buildDefaultAssignments(
   attackers: CardId[],
   defenders: CardId[],
-  query: RulesQuery
+  query: RulesQuery,
 ): DamageAssignment[] {
-  if (attackers.length === 0 || defenders.length === 0) return []
+  if (attackers.length === 0 || defenders.length === 0) return [];
 
-  const tankDefenders = defenders.filter((id) => query.keywordsOf(id).includes('Tank'))
-  const nonTankDefenders = defenders.filter((id) => !query.keywordsOf(id).includes('Tank'))
-  const orderedDefenders = [...tankDefenders, ...nonTankDefenders]
+  const tankDefenders = defenders.filter((id) => query.keywordsOf(id).includes("Tank"));
+  const nonTankDefenders = defenders.filter((id) => !query.keywordsOf(id).includes("Tank"));
+  const orderedDefenders = [...tankDefenders, ...nonTankDefenders];
 
-  const assignments: DamageAssignment[] = []
-  let defenderIndex = 0
+  const assignments: DamageAssignment[] = [];
+  let defenderIndex = 0;
 
   for (const attackerId of attackers) {
-    if (defenderIndex >= orderedDefenders.length) break
-    const targetId = orderedDefenders[defenderIndex]
-    if (!targetId) break
-    const amount = query.mightOf(attackerId)
-    assignments.push({ attackerId, targetId, amount })
-    defenderIndex++
+    if (defenderIndex >= orderedDefenders.length) break;
+    const targetId = orderedDefenders[defenderIndex];
+    if (!targetId) break;
+    const amount = query.mightOf(attackerId);
+    assignments.push({ attackerId, targetId, amount });
+    defenderIndex++;
   }
 
-  return assignments
+  return assignments;
 }

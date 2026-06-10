@@ -1,27 +1,27 @@
-import { z } from 'zod'
-import { DecisionRequestSchema } from './decisions.js'
-import { PhaseSchema } from './events.js'
+import { z } from "zod";
+import { DecisionRequestSchema } from "./decisions.js";
+import { PhaseSchema } from "./events.js";
 import {
   CardDefIdSchema,
   CardIdSchema,
   GameIdSchema,
   MatchIdSchema,
   PlayerIdSchema,
-} from './ids.js'
+} from "./ids.js";
 
 export const RuneSlotViewSchema = z.object({
   filled: z.boolean(),
   runeDefId: CardDefIdSchema.nullable(),
-})
-export type RuneSlotView = z.infer<typeof RuneSlotViewSchema>
+});
+export type RuneSlotView = z.infer<typeof RuneSlotViewSchema>;
 
 export const ChainItemViewSchema = z.object({
   cardId: CardIdSchema,
   defId: CardDefIdSchema,
   controllerId: PlayerIdSchema,
   resolved: z.boolean(),
-})
-export type ChainItemView = z.infer<typeof ChainItemViewSchema>
+});
+export type ChainItemView = z.infer<typeof ChainItemViewSchema>;
 
 export const CardInstanceViewSchema = z.object({
   cardId: CardIdSchema,
@@ -32,8 +32,8 @@ export const CardInstanceViewSchema = z.object({
   counters: z.record(z.string(), z.number().int()),
   hidden: z.boolean(),
   faceDown: z.boolean(),
-})
-export type CardInstanceView = z.infer<typeof CardInstanceViewSchema>
+});
+export type CardInstanceView = z.infer<typeof CardInstanceViewSchema>;
 
 const PlayerStateBaseSchema = z.object({
   mainDeck: z.object({ count: z.number().int().nonnegative() }),
@@ -48,19 +48,19 @@ const PlayerStateBaseSchema = z.object({
     power: z.number().int().nonnegative(),
   }),
   points: z.number().int().nonnegative(),
-})
+});
 
 export const SelfViewSchema = PlayerStateBaseSchema.extend({
   playerId: PlayerIdSchema,
   hand: z.array(CardInstanceViewSchema),
-})
-export type SelfView = z.infer<typeof SelfViewSchema>
+});
+export type SelfView = z.infer<typeof SelfViewSchema>;
 
 export const OpponentViewSchema = PlayerStateBaseSchema.extend({
   playerId: PlayerIdSchema,
   handCount: z.number().int().nonnegative(),
-})
-export type OpponentView = z.infer<typeof OpponentViewSchema>
+});
+export type OpponentView = z.infer<typeof OpponentViewSchema>;
 
 export const SharedViewSchema = z.object({
   gameId: GameIdSchema,
@@ -71,12 +71,12 @@ export const SharedViewSchema = z.object({
   chain: z.array(ChainItemViewSchema),
   pendingDecision: DecisionRequestSchema.nullable(),
   matchRecord: z.object({ wins: z.record(z.string(), z.number().int().nonnegative()) }),
-})
-export type SharedView = z.infer<typeof SharedViewSchema>
+});
+export type SharedView = z.infer<typeof SharedViewSchema>;
 
 export const PlayerViewSchema = z.object({
   self: SelfViewSchema,
   opponent: OpponentViewSchema,
   shared: SharedViewSchema,
-})
-export type PlayerView = z.infer<typeof PlayerViewSchema>
+});
+export type PlayerView = z.infer<typeof PlayerViewSchema>;

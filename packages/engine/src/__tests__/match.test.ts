@@ -7,7 +7,7 @@ import type {
   MatchId,
   PlayerId,
   PlayerView,
-} from '@thejokersthief/riftbound-protocol'
+} from "@thejokersthief/riftbound-protocol";
 import {
   toBattlefieldId,
   toCardDefId,
@@ -16,27 +16,27 @@ import {
   toMatchId,
   toPlayerId,
   toZoneId,
-} from '@thejokersthief/riftbound-protocol'
-import { describe, expect, it, vi } from 'vitest'
+} from "@thejokersthief/riftbound-protocol";
+import { describe, expect, it, vi } from "vitest";
 import {
   type GameEngineFunctions,
   createMatch,
   legalMatchActions,
   submitToMatch,
   viewForMatch,
-} from '../match/index.js'
-import type { DeckConfig } from '../match/state.js'
-import type { GameState } from '../state/types.js'
+} from "../match/index.js";
+import type { DeckConfig } from "../match/state.js";
+import type { GameState } from "../state/types.js";
 
 // ---------------------------------------------------------------------------
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = toPlayerId('player1')
-const p2 = toPlayerId('player2')
-const card1 = toCardId('card001')
-const bf1 = toBattlefieldId('bf001')
-const def1 = toCardDefId('def001')
+const p1 = toPlayerId("player1");
+const p2 = toPlayerId("player2");
+const card1 = toCardId("card001");
+const bf1 = toBattlefieldId("bf001");
+const def1 = toCardDefId("def001");
 
 // ---------------------------------------------------------------------------
 // GameState factory
@@ -44,12 +44,12 @@ const def1 = toCardDefId('def001')
 
 function makeGameState(
   players: readonly [PlayerId, PlayerId],
-  overrides: Partial<GameState> = {}
+  overrides: Partial<GameState> = {},
 ): GameState {
-  const [pa, pb] = players
+  const [pa, pb] = players;
   return {
-    gameId: toGameId('game1'),
-    matchId: toMatchId('match1'),
+    gameId: toGameId("game1"),
+    matchId: toMatchId("match1"),
     playerIds: [pa, pb],
     cards: {
       [card1]: {
@@ -70,8 +70,8 @@ function makeGameState(
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: toCardId('leg1'),
-        championZone: toCardId('chm1'),
+        legendZone: toCardId("leg1"),
+        championZone: toCardId("chm1"),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -81,8 +81,8 @@ function makeGameState(
         mainDeck: [],
         runeDeck: [],
         runePool: [],
-        legendZone: toCardId('leg2'),
-        championZone: toCardId('chm2'),
+        legendZone: toCardId("leg2"),
+        championZone: toCardId("chm2"),
         base: [],
         resources: { energy: 3, power: 2 },
         points: 0,
@@ -91,26 +91,26 @@ function makeGameState(
     battlefields: {
       [bf1]: {
         id: bf1,
-        cardId: toCardId('bfcard1'),
+        cardId: toCardId("bfcard1"),
         controllerId: null,
         units: [],
       },
     },
     turnNumber: 1,
     activePlayerId: pa,
-    phase: 'Main',
+    phase: "Main",
     chain: { isOpen: false, items: [], priority: null, focus: null, showdown: null },
     resolutionStack: [],
     pendingDecision: null,
     rng: { seed: 12345 },
     scoredThisTurn: {},
-    status: 'playing',
+    status: "playing",
     winner: null,
     hotQueue: [],
     holdEligible: [],
     firstTurnSecondPlayer: false,
     ...overrides,
-  }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -124,7 +124,7 @@ function makeDeckConfig(): DeckConfig {
     legendId: def1,
     championId: def1,
     battlefields: [def1, def1, def1],
-  }
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -136,170 +136,203 @@ const mockEngine: GameEngineFunctions = {
   submit: (state, _action) => ({ state, events: [] }),
   legalActions: (_state, _playerId) => [],
   viewFor: (_state, _playerId) => ({}) as PlayerView,
-}
+};
 
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('createMatch', () => {
-  it('initializes MatchState with status=playing, winner=null, gameWins=0', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const match = createMatch({ players: [p1, p2], decks, seed: 42 }, mockEngine)
+describe("createMatch", () => {
+  it("initializes MatchState with status=playing, winner=null, gameWins=0", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const match = createMatch({ players: [p1, p2], decks, seed: 42 }, mockEngine);
 
-    expect(match.status).toBe('playing')
-    expect(match.winner).toBeNull()
-    expect(match.gameWins[p1]).toBe(0)
-    expect(match.gameWins[p2]).toBe(0)
-  })
+    expect(match.status).toBe("playing");
+    expect(match.winner).toBeNull();
+    expect(match.gameWins[p1]).toBe(0);
+    expect(match.gameWins[p2]).toBe(0);
+  });
 
-  it('sets currentGame from engine.createGame', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const createdGame = makeGameState([p1, p2])
+  it("sets currentGame from engine.createGame", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const createdGame = makeGameState([p1, p2]);
     const engine: GameEngineFunctions = {
       ...mockEngine,
       createGame: vi.fn(() => createdGame),
-    }
-    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, engine)
+    };
+    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, engine);
 
-    expect(match.currentGame).toBe(createdGame)
-    expect(engine.createGame).toHaveBeenCalledOnce()
-  })
+    expect(match.currentGame).toBe(createdGame);
+    expect(engine.createGame).toHaveBeenCalledOnce();
+  });
 
-  it('stores playerIds and decks on the match', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const match = createMatch({ players: [p1, p2], decks, seed: 7 }, mockEngine)
+  it("stores playerIds and decks on the match", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const match = createMatch({ players: [p1, p2], decks, seed: 7 }, mockEngine);
 
-    expect(match.playerIds).toEqual([p1, p2])
-    expect(match.decks).toBe(decks)
-  })
-})
+    expect(match.playerIds).toEqual([p1, p2]);
+    expect(match.decks).toBe(decks);
+  });
+});
 
-describe('submitToMatch', () => {
-  it('delegates to engine.submit and updates currentGame', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine)
-    const newGame = makeGameState([p1, p2], { turnNumber: 2 })
+describe("submitToMatch", () => {
+  it("delegates to engine.submit and updates currentGame", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine);
+    const newGame = makeGameState([p1, p2], { turnNumber: 2 });
     const engine: GameEngineFunctions = {
       ...mockEngine,
       submit: vi.fn(() => ({ state: newGame, events: [] })),
-    }
-    const action: Action = { type: 'EndTurn', playerId: p1 }
-    const { matchState: updated } = submitToMatch(match, action, engine)
+    };
+    const action: Action = { type: "EndTurn", playerId: p1 };
+    const { matchState: updated } = submitToMatch(match, action, engine);
 
-    expect(engine.submit).toHaveBeenCalledWith(match.currentGame, action)
-    expect(updated.currentGame).toBe(newGame)
-  })
+    expect(engine.submit).toHaveBeenCalledWith(match.currentGame, action);
+    expect(updated.currentGame).toBe(newGame);
+  });
 
-  it('increments gameWins when a game ends with a winner', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine)
-    const endedGame = makeGameState([p1, p2], { status: 'ended', winner: p1 })
+  it("increments gameWins when a game ends with a winner", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine);
+    const endedGame = makeGameState([p1, p2], { status: "ended", winner: p1 });
     const engine: GameEngineFunctions = {
       ...mockEngine,
       submit: () => ({ state: endedGame, events: [] }),
-    }
-    const action: Action = { type: 'EndTurn', playerId: p1 }
-    const { matchState: updated } = submitToMatch(match, action, engine)
+    };
+    const action: Action = { type: "EndTurn", playerId: p1 };
+    const { matchState: updated } = submitToMatch(match, action, engine);
 
-    expect(updated.gameWins[p1]).toBe(1)
-    expect(updated.gameWins[p2]).toBe(0)
-  })
+    expect(updated.gameWins[p1]).toBe(1);
+    expect(updated.gameWins[p2]).toBe(0);
+  });
 
-  it('sets matchState.status to ended when gameWins[winner] >= 2', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
+  it("sets matchState.status to ended when gameWins[winner] >= 2", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
     // Start with p1 already having 1 win
-    const initialMatch = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine)
+    const initialMatch = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine);
     const matchWithOneWin = {
       ...initialMatch,
       gameWins: { [p1]: 1, [p2]: 0 } as Record<PlayerId, number>,
-    }
+    };
 
-    const endedGame = makeGameState([p1, p2], { status: 'ended', winner: p1 })
+    const endedGame = makeGameState([p1, p2], { status: "ended", winner: p1 });
     const engine: GameEngineFunctions = {
       ...mockEngine,
       submit: () => ({ state: endedGame, events: [] }),
-    }
-    const action: Action = { type: 'EndTurn', playerId: p1 }
-    const { matchState: updated } = submitToMatch(matchWithOneWin, action, engine)
+    };
+    const action: Action = { type: "EndTurn", playerId: p1 };
+    const { matchState: updated } = submitToMatch(matchWithOneWin, action, engine);
 
-    expect(updated.gameWins[p1]).toBe(2)
-    expect(updated.status).toBe('ended')
-    expect(updated.winner).toBe(p1)
-  })
+    expect(updated.gameWins[p1]).toBe(2);
+    expect(updated.status).toBe("ended");
+    expect(updated.winner).toBe(p1);
+  });
 
-  it('does not end match when gameWins[winner] < 2', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine)
-    const endedGame = makeGameState([p1, p2], { status: 'ended', winner: p1 })
+  it("does not end match when gameWins[winner] < 2", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine);
+    const endedGame = makeGameState([p1, p2], { status: "ended", winner: p1 });
     const engine: GameEngineFunctions = {
       ...mockEngine,
       submit: () => ({ state: endedGame, events: [] }),
-    }
-    const action: Action = { type: 'EndTurn', playerId: p1 }
-    const { matchState: updated } = submitToMatch(match, action, engine)
+    };
+    const action: Action = { type: "EndTurn", playerId: p1 };
+    const { matchState: updated } = submitToMatch(match, action, engine);
 
-    expect(updated.status).toBe('playing')
-    expect(updated.winner).toBeNull()
-  })
+    expect(updated.status).toBe("playing");
+    expect(updated.winner).toBeNull();
+  });
 
-  it('returns events from engine.submit', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine)
-    const stubEvents = [{ type: 'TurnStarted' as const, turnNumber: 2, activePlayerId: p2 }]
+  it("returns events from engine.submit", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine);
+    const stubEvents = [{ type: "TurnStarted" as const, turnNumber: 2, activePlayerId: p2 }];
     const engine: GameEngineFunctions = {
       ...mockEngine,
       submit: () => ({ state: match.currentGame, events: stubEvents }),
-    }
-    const action: Action = { type: 'EndTurn', playerId: p1 }
-    const { events } = submitToMatch(match, action, engine)
+    };
+    const action: Action = { type: "EndTurn", playerId: p1 };
+    const { events } = submitToMatch(match, action, engine);
 
-    expect(events).toBe(stubEvents)
-  })
-})
+    expect(events).toBe(stubEvents);
+  });
+});
 
-describe('legalMatchActions', () => {
-  it('returns empty array when match is ended', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine)
-    const endedMatch = { ...match, status: 'ended' as const, winner: p1 }
+describe("legalMatchActions", () => {
+  it("returns empty array when match is ended", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine);
+    const endedMatch = { ...match, status: "ended" as const, winner: p1 };
     const engine: GameEngineFunctions = {
       ...mockEngine,
       legalActions: vi.fn(() => []),
-    }
-    const actions = legalMatchActions(endedMatch, p1, engine)
+    };
+    const actions = legalMatchActions(endedMatch, p1, engine);
 
-    expect(actions).toEqual([])
-    expect(engine.legalActions).not.toHaveBeenCalled()
-  })
+    expect(actions).toEqual([]);
+    expect(engine.legalActions).not.toHaveBeenCalled();
+  });
 
-  it('delegates to engine.legalActions when match is playing', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine)
-    const stubActions: Action[] = [{ type: 'EndTurn', playerId: p1 }]
+  it("delegates to engine.legalActions when match is playing", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine);
+    const stubActions: Action[] = [{ type: "EndTurn", playerId: p1 }];
     const engine: GameEngineFunctions = {
       ...mockEngine,
       legalActions: vi.fn(() => stubActions),
-    }
-    const actions = legalMatchActions(match, p1, engine)
+    };
+    const actions = legalMatchActions(match, p1, engine);
 
-    expect(engine.legalActions).toHaveBeenCalledWith(match.currentGame, p1)
-    expect(actions).toBe(stubActions)
-  })
-})
+    expect(engine.legalActions).toHaveBeenCalledWith(match.currentGame, p1);
+    expect(actions).toBe(stubActions);
+  });
+});
 
-describe('viewForMatch', () => {
-  it('delegates to engine.viewFor', () => {
-    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<PlayerId, DeckConfig>
-    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine)
-    const stubView = { self: {}, opponent: {}, shared: {} } as unknown as PlayerView
+describe("viewForMatch", () => {
+  it("delegates to engine.viewFor", () => {
+    const decks = { [p1]: makeDeckConfig(), [p2]: makeDeckConfig() } as Record<
+      PlayerId,
+      DeckConfig
+    >;
+    const match = createMatch({ players: [p1, p2], decks, seed: 1 }, mockEngine);
+    const stubView = { self: {}, opponent: {}, shared: {} } as unknown as PlayerView;
     const engine: GameEngineFunctions = {
       ...mockEngine,
       viewFor: vi.fn(() => stubView),
-    }
-    const view = viewForMatch(match, p1, engine)
+    };
+    const view = viewForMatch(match, p1, engine);
 
-    expect(engine.viewFor).toHaveBeenCalledWith(match.currentGame, p1)
-    expect(view).toBe(stubView)
-  })
-})
+    expect(engine.viewFor).toHaveBeenCalledWith(match.currentGame, p1);
+    expect(view).toBe(stubView);
+  });
+});

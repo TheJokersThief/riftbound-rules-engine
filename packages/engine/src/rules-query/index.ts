@@ -1,18 +1,18 @@
-import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
-import type { CardId, PlayerId } from '@thejokersthief/riftbound-protocol'
-import type { GameState } from '../state/types.js'
-import { computeKeywords, computeMight } from './layers.js'
-import { checkResources, checkTiming } from './timing.js'
+import type { CardCatalog } from "@thejokersthief/riftbound-card-catalog";
+import type { CardId, PlayerId } from "@thejokersthief/riftbound-protocol";
+import type { GameState } from "../state/types.js";
+import { computeKeywords, computeMight } from "./layers.js";
+import { checkResources, checkTiming } from "./timing.js";
 
 export interface RulesQuery {
   /** Effective might of the card after all layer modifications. */
-  mightOf(cardId: CardId): number
+  mightOf(cardId: CardId): number;
   /** True when effective might is greater than zero. */
-  isMighty(cardId: CardId): boolean
+  isMighty(cardId: CardId): boolean;
   /** Deduplicated list of keywords (base definition ∪ instance-granted). */
-  keywordsOf(cardId: CardId): string[]
+  keywordsOf(cardId: CardId): string[];
   /** True when it is legal for the player to play this card right now. */
-  canBePlayed(cardId: CardId, playerId: PlayerId): boolean
+  canBePlayed(cardId: CardId, playerId: PlayerId): boolean;
 }
 
 /**
@@ -21,44 +21,44 @@ export interface RulesQuery {
  * Create a new RulesQuery whenever the state changes.
  */
 export function createRulesQuery(state: GameState, catalog: CardCatalog): RulesQuery {
-  const mightCache = new Map<CardId, number>()
-  const keywordsCache = new Map<CardId, string[]>()
+  const mightCache = new Map<CardId, number>();
+  const keywordsCache = new Map<CardId, string[]>();
 
   return {
     mightOf(cardId: CardId): number {
-      const cached = mightCache.get(cardId)
-      if (cached !== undefined) return cached
-      const value = computeMight(state, catalog, cardId)
-      mightCache.set(cardId, value)
-      return value
+      const cached = mightCache.get(cardId);
+      if (cached !== undefined) return cached;
+      const value = computeMight(state, catalog, cardId);
+      mightCache.set(cardId, value);
+      return value;
     },
 
     isMighty(cardId: CardId): boolean {
-      return this.mightOf(cardId) > 0
+      return this.mightOf(cardId) > 0;
     },
 
     keywordsOf(cardId: CardId): string[] {
-      const cached = keywordsCache.get(cardId)
-      if (cached !== undefined) return cached
-      const value = computeKeywords(state, catalog, cardId)
-      keywordsCache.set(cardId, value)
-      return value
+      const cached = keywordsCache.get(cardId);
+      if (cached !== undefined) return cached;
+      const value = computeKeywords(state, catalog, cardId);
+      keywordsCache.set(cardId, value);
+      return value;
     },
 
     canBePlayed(cardId: CardId, playerId: PlayerId): boolean {
-      const instance = state.cards[cardId]
-      if (!instance) return false
+      const instance = state.cards[cardId];
+      if (!instance) return false;
 
-      const def = catalog.find(instance.defId)
-      if (!def) return false
+      const def = catalog.find(instance.defId);
+      if (!def) return false;
 
-      const player = state.players[playerId]
-      if (!player) return false
+      const player = state.players[playerId];
+      if (!player) return false;
 
-      if (!checkTiming(def, state)) return false
-      if (!checkResources(def.playCost, player)) return false
+      if (!checkTiming(def, state)) return false;
+      if (!checkResources(def.playCost, player)) return false;
 
-      return true
+      return true;
     },
-  }
+  };
 }

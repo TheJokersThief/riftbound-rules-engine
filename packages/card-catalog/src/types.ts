@@ -1,29 +1,29 @@
-import { CardDefIdSchema } from '@thejokersthief/riftbound-protocol'
-import { z } from 'zod'
+import { CardDefIdSchema } from "@thejokersthief/riftbound-protocol";
+import { z } from "zod";
 
 export const PlayCostSchema = z.object({
   energy: z.number().int().min(0),
   power: z.number().int().min(0),
   runes: z.array(z.string()),
-})
+});
 
-export type PlayCost = z.infer<typeof PlayCostSchema>
+export type PlayCost = z.infer<typeof PlayCostSchema>;
 
 export const CardTypeSchema = z.enum([
-  'Unit',
-  'Gear',
-  'Spell',
-  'Legend',
-  'ChosenChampion',
-  'Battlefield',
-  'Rune',
-])
+  "Unit",
+  "Gear",
+  "Spell",
+  "Legend",
+  "ChosenChampion",
+  "Battlefield",
+  "Rune",
+]);
 
-export type CardType = z.infer<typeof CardTypeSchema>
+export type CardType = z.infer<typeof CardTypeSchema>;
 
-export const DeckZoneSchema = z.enum(['Main', 'Rune', 'Legend', 'Champion', 'Battlefield'])
+export const DeckZoneSchema = z.enum(["Main", "Rune", "Legend", "Champion", "Battlefield"]);
 
-export type DeckZone = z.infer<typeof DeckZoneSchema>
+export type DeckZone = z.infer<typeof DeckZoneSchema>;
 
 export const CardDefinitionSchema = z.object({
   id: CardDefIdSchema,
@@ -36,8 +36,8 @@ export const CardDefinitionSchema = z.object({
   playCost: PlayCostSchema.nullable(),
   deckZone: DeckZoneSchema,
   keywords: z.array(z.string()),
-})
+});
 
-export type CardDefinition = z.infer<typeof CardDefinitionSchema>
+export type CardDefinition = z.infer<typeof CardDefinitionSchema>;
 
-export const CardSnapshotSchema = z.record(CardDefIdSchema, CardDefinitionSchema)
+export const CardSnapshotSchema = z.record(CardDefIdSchema, CardDefinitionSchema);

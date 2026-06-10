@@ -1,13 +1,13 @@
-import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
-import type { ActionNode } from '@thejokersthief/riftbound-effect-ir'
-import type { CardId, ZoneId } from '@thejokersthief/riftbound-protocol'
-import { toCardId, toZoneId } from '@thejokersthief/riftbound-protocol'
-import type { GameEvent } from '@thejokersthief/riftbound-protocol'
-import type { RulesQuery } from '../rules-query/index.js'
-import { fold } from '../state/fold.js'
-import type { EffectFrame } from '../state/stack.js'
-import type { GameState } from '../state/types.js'
-import { evalNumberExpr, resolvePlayerRef, resolveSelector } from './selectors.js'
+import type { CardCatalog } from "@thejokersthief/riftbound-card-catalog";
+import type { ActionNode } from "@thejokersthief/riftbound-effect-ir";
+import type { CardId, ZoneId } from "@thejokersthief/riftbound-protocol";
+import { toCardId, toZoneId } from "@thejokersthief/riftbound-protocol";
+import type { GameEvent } from "@thejokersthief/riftbound-protocol";
+import type { RulesQuery } from "../rules-query/index.js";
+import { fold } from "../state/fold.js";
+import type { EffectFrame } from "../state/stack.js";
+import type { GameState } from "../state/types.js";
+import { evalNumberExpr, resolvePlayerRef, resolveSelector } from "./selectors.js";
 
 // ---------------------------------------------------------------------------
 // Helper: find which zone a card currently lives in (best-effort)
@@ -15,17 +15,17 @@ import { evalNumberExpr, resolvePlayerRef, resolveSelector } from './selectors.j
 
 function currentZoneOfCard(state: GameState, cardId: CardId): ZoneId {
   for (const bf of Object.values(state.battlefields)) {
-    if (!bf) continue
-    if (bf.units.includes(cardId)) return toZoneId('battlefield')
+    if (!bf) continue;
+    if (bf.units.includes(cardId)) return toZoneId("battlefield");
   }
   for (const player of Object.values(state.players)) {
-    if (!player) continue
-    if (player.hand.includes(cardId)) return toZoneId('hand')
-    if (player.mainDeck.includes(cardId)) return toZoneId('mainDeck')
-    if (player.base.includes(cardId)) return toZoneId('base')
-    if (player.runeDeck.includes(cardId)) return toZoneId('runeDeck')
+    if (!player) continue;
+    if (player.hand.includes(cardId)) return toZoneId("hand");
+    if (player.mainDeck.includes(cardId)) return toZoneId("mainDeck");
+    if (player.base.includes(cardId)) return toZoneId("base");
+    if (player.runeDeck.includes(cardId)) return toZoneId("runeDeck");
   }
-  return toZoneId('unknown')
+  return toZoneId("unknown");
 }
 
 // ---------------------------------------------------------------------------
@@ -37,280 +37,282 @@ export function executeAction(
   frame: EffectFrame,
   state: GameState,
   query: RulesQuery,
-  catalog: CardCatalog
+  catalog: CardCatalog,
 ): { state: GameState; events: GameEvent[] } {
   switch (node.type) {
-    case 'Deal': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Deal": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const targetId of targets) {
-        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog)
-        const bonus = node.bonus ? evalNumberExpr(node.bonus, s, frame.sourceId, query, catalog) : 0
+        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog);
+        const bonus = node.bonus
+          ? evalNumberExpr(node.bonus, s, frame.sourceId, query, catalog)
+          : 0;
         const event: GameEvent = {
-          type: 'DamageDealt',
+          type: "DamageDealt",
           sourceId: frame.sourceId,
           targetId,
           amount,
           bonus,
-        }
-        events.push(event)
-        s = fold(s, event)
+        };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Draw': {
-      const playerId = resolvePlayerRef(node.player, state, frame.sourceId)
-      const count = evalNumberExpr(node.count, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Draw": {
+      const playerId = resolvePlayerRef(node.player, state, frame.sourceId);
+      const count = evalNumberExpr(node.count, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (let i = 0; i < count; i++) {
-        const player = s.players[playerId]!
-        const cardId = player.mainDeck[0] ?? null
-        const event: GameEvent = { type: 'CardDrawn', playerId, cardId }
-        events.push(event)
-        s = fold(s, event)
+        const player = s.players[playerId]!;
+        const cardId = player.mainDeck[0] ?? null;
+        const event: GameEvent = { type: "CardDrawn", playerId, cardId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Discard': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Discard": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const card = s.cards[cardId]
-        if (!card) continue
-        const event: GameEvent = { type: 'CardDiscarded', playerId: card.ownerId, cardId }
-        events.push(event)
-        s = fold(s, event)
+        const card = s.cards[cardId];
+        if (!card) continue;
+        const event: GameEvent = { type: "CardDiscarded", playerId: card.ownerId, cardId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Move': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Move": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const fromZone = currentZoneOfCard(s, cardId)
-        const toZone = toZoneId(node.toZone)
-        const event: GameEvent = { type: 'CardMoved', cardId, fromZone, toZone }
-        events.push(event)
-        s = fold(s, event)
+        const fromZone = currentZoneOfCard(s, cardId);
+        const toZone = toZoneId(node.toZone);
+        const event: GameEvent = { type: "CardMoved", cardId, fromZone, toZone };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Recall': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Recall": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const event: GameEvent = { type: 'CardRecalled', cardId }
-        events.push(event)
-        s = fold(s, event)
+        const event: GameEvent = { type: "CardRecalled", cardId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'ReturnToHand': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "ReturnToHand": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const card = s.cards[cardId]
-        if (!card) continue
-        const event: GameEvent = { type: 'CardReturnedToHand', cardId, playerId: card.ownerId }
-        events.push(event)
-        s = fold(s, event)
+        const card = s.cards[cardId];
+        if (!card) continue;
+        const event: GameEvent = { type: "CardReturnedToHand", cardId, playerId: card.ownerId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Buff': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Buff": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog)
-        const event: GameEvent = { type: 'CardBuffed', cardId, amount }
-        events.push(event)
-        s = fold(s, event)
+        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog);
+        const event: GameEvent = { type: "CardBuffed", cardId, amount };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Ready': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Ready": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const event: GameEvent = { type: 'CardReadied', cardId }
-        events.push(event)
-        s = fold(s, event)
+        const event: GameEvent = { type: "CardReadied", cardId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Exhaust': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Exhaust": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const event: GameEvent = { type: 'CardExhausted', cardId }
-        events.push(event)
-        s = fold(s, event)
+        const event: GameEvent = { type: "CardExhausted", cardId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Kill': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Kill": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const event: GameEvent = { type: 'CardKilled', cardId }
-        events.push(event)
-        s = fold(s, event)
+        const event: GameEvent = { type: "CardKilled", cardId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Banish': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Banish": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const event: GameEvent = { type: 'CardBanished', cardId }
-        events.push(event)
-        s = fold(s, event)
+        const event: GameEvent = { type: "CardBanished", cardId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'CreateToken': {
-      const count = evalNumberExpr(node.count, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
-      const zoneId = toZoneId(node.zone)
+    case "CreateToken": {
+      const count = evalNumberExpr(node.count, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
+      const zoneId = toZoneId(node.zone);
       for (let i = 0; i < count; i++) {
-        const cardId = toCardId(`tok_${Math.random().toString(36).slice(2, 9)}`)
-        const event: GameEvent = { type: 'TokenCreated', cardId, defId: node.defId, zoneId }
-        events.push(event)
-        s = fold(s, event)
+        const cardId = toCardId(`tok_${Math.random().toString(36).slice(2, 9)}`);
+        const event: GameEvent = { type: "TokenCreated", cardId, defId: node.defId, zoneId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Counter': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Counter": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const event: GameEvent = { type: 'CardCountered', cardId }
-        events.push(event)
-        s = fold(s, event)
+        const event: GameEvent = { type: "CardCountered", cardId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'AddResource': {
-      const playerId = resolvePlayerRef(node.player, state, frame.sourceId)
-      const energy = evalNumberExpr(node.energy, state, frame.sourceId, query, catalog)
-      const power = evalNumberExpr(node.power, state, frame.sourceId, query, catalog)
-      const event: GameEvent = { type: 'ResourceAdded', playerId, energy, power }
-      const s = fold(state, event)
-      return { state: s, events: [event] }
+    case "AddResource": {
+      const playerId = resolvePlayerRef(node.player, state, frame.sourceId);
+      const energy = evalNumberExpr(node.energy, state, frame.sourceId, query, catalog);
+      const power = evalNumberExpr(node.power, state, frame.sourceId, query, catalog);
+      const event: GameEvent = { type: "ResourceAdded", playerId, energy, power };
+      const s = fold(state, event);
+      return { state: s, events: [event] };
     }
 
-    case 'GainXP': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "GainXP": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog)
-        const event: GameEvent = { type: 'XPGained', cardId, amount }
-        events.push(event)
-        s = fold(s, event)
+        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog);
+        const event: GameEvent = { type: "XPGained", cardId, amount };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'SpendXP': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "SpendXP": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog)
-        const event: GameEvent = { type: 'XPSpent', cardId, amount }
-        events.push(event)
-        s = fold(s, event)
+        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog);
+        const event: GameEvent = { type: "XPSpent", cardId, amount };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Reveal': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Reveal": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const card = s.cards[cardId]
-        if (!card) continue
-        const def = catalog.find(card.defId)
-        if (!def) continue
-        const event: GameEvent = { type: 'CardRevealed', cardId, defId: card.defId }
-        events.push(event)
-        s = fold(s, event)
+        const card = s.cards[cardId];
+        if (!card) continue;
+        const def = catalog.find(card.defId);
+        if (!def) continue;
+        const event: GameEvent = { type: "CardRevealed", cardId, defId: card.defId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'Recycle': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "Recycle": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const card = s.cards[cardId]
-        if (!card) continue
-        const event: GameEvent = { type: 'CardRecycled', cardId, playerId: card.ownerId }
-        events.push(event)
-        s = fold(s, event)
+        const card = s.cards[cardId];
+        if (!card) continue;
+        const event: GameEvent = { type: "CardRecycled", cardId, playerId: card.ownerId };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'GiveMight': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "GiveMight": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog)
-        const event: GameEvent = { type: 'MightGiven', cardId, amount }
-        events.push(event)
-        s = fold(s, event)
+        const amount = evalNumberExpr(node.amount, s, frame.sourceId, query, catalog);
+        const event: GameEvent = { type: "MightGiven", cardId, amount };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'GrantKeyword': {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog)
-      const events: GameEvent[] = []
-      let s = state
+    case "GrantKeyword": {
+      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const events: GameEvent[] = [];
+      let s = state;
       for (const cardId of targets) {
-        const event: GameEvent = { type: 'KeywordGranted', cardId, keyword: node.keyword }
-        events.push(event)
-        s = fold(s, event)
+        const event: GameEvent = { type: "KeywordGranted", cardId, keyword: node.keyword };
+        events.push(event);
+        s = fold(s, event);
       }
-      return { state: s, events }
+      return { state: s, events };
     }
 
-    case 'TakeExtraTurn': {
-      const playerId = resolvePlayerRef(node.player, state, frame.sourceId)
-      const event: GameEvent = { type: 'ExtraTurnGranted', playerId }
-      const s = fold(state, event)
-      return { state: s, events: [event] }
+    case "TakeExtraTurn": {
+      const playerId = resolvePlayerRef(node.player, state, frame.sourceId);
+      const event: GameEvent = { type: "ExtraTurnGranted", playerId };
+      const s = fold(state, event);
+      return { state: s, events: [event] };
     }
   }
 }

@@ -1,4 +1,4 @@
-import type { CardCatalog, CardDefinition } from '@thejokersthief/riftbound-card-catalog'
+import type { CardCatalog, CardDefinition } from "@thejokersthief/riftbound-card-catalog";
 import type {
   BattlefieldId,
   CardDefId,
@@ -6,7 +6,7 @@ import type {
   GameId,
   MatchId,
   PlayerId,
-} from '@thejokersthief/riftbound-protocol'
+} from "@thejokersthief/riftbound-protocol";
 import {
   toBattlefieldId,
   toCardDefId,
@@ -15,31 +15,31 @@ import {
   toMatchId,
   toPlayerId,
   toZoneId,
-} from '@thejokersthief/riftbound-protocol'
-import { PlayerViewSchema } from '@thejokersthief/riftbound-protocol'
-import { describe, expect, it } from 'vitest'
-import type { GameState } from '../state/types.js'
-import { viewFor } from '../visibility/index.js'
+} from "@thejokersthief/riftbound-protocol";
+import { PlayerViewSchema } from "@thejokersthief/riftbound-protocol";
+import { describe, expect, it } from "vitest";
+import type { GameState } from "../state/types.js";
+import { viewFor } from "../visibility/index.js";
 
 // ---------------------------------------------------------------------------
 // Fixture identifiers
 // ---------------------------------------------------------------------------
 
-const p1 = toPlayerId('player1')
-const p2 = toPlayerId('player2')
-const handCard1 = toCardId('hand001')
-const handCard2 = toCardId('hand002')
-const legCard1 = toCardId('leg001')
-const legCard2 = toCardId('leg002')
-const chmCard1 = toCardId('chm001')
-const chmCard2 = toCardId('chm002')
-const baseCard1 = toCardId('base001')
-const baseCard2 = toCardId('base002')
-const deckCard1 = toCardId('deck001')
-const deckCard2 = toCardId('deck002')
-const def1 = toCardDefId('def001')
-const def2 = toCardDefId('def002')
-const bf1 = toBattlefieldId('bf001')
+const p1 = toPlayerId("player1");
+const p2 = toPlayerId("player2");
+const handCard1 = toCardId("hand001");
+const handCard2 = toCardId("hand002");
+const legCard1 = toCardId("leg001");
+const legCard2 = toCardId("leg002");
+const chmCard1 = toCardId("chm001");
+const chmCard2 = toCardId("chm002");
+const baseCard1 = toCardId("base001");
+const baseCard2 = toCardId("base002");
+const deckCard1 = toCardId("deck001");
+const deckCard2 = toCardId("deck002");
+const def1 = toCardDefId("def001");
+const def2 = toCardDefId("def002");
+const bf1 = toBattlefieldId("bf001");
 
 // ---------------------------------------------------------------------------
 // Mock catalog
@@ -47,44 +47,44 @@ const bf1 = toBattlefieldId('bf001')
 
 const unitDef: CardDefinition = {
   id: def1,
-  name: 'Test Unit',
-  cardType: 'Unit',
-  set: 'core',
-  rarity: 'common',
-  abilityText: '',
+  name: "Test Unit",
+  cardType: "Unit",
+  set: "core",
+  rarity: "common",
+  abilityText: "",
   might: 3,
   playCost: { energy: 2, power: 1, runes: [] },
-  deckZone: 'Main',
-  keywords: ['Brave'],
-}
+  deckZone: "Main",
+  keywords: ["Brave"],
+};
 
 const unit2Def: CardDefinition = {
   id: def2,
-  name: 'Cheap Unit',
-  cardType: 'Unit',
-  set: 'core',
-  rarity: 'common',
-  abilityText: '',
+  name: "Cheap Unit",
+  cardType: "Unit",
+  set: "core",
+  rarity: "common",
+  abilityText: "",
   might: 1,
   playCost: { energy: 1, power: 0, runes: [] },
-  deckZone: 'Main',
+  deckZone: "Main",
   keywords: [],
-}
+};
 
 const defs: Record<CardDefId, CardDefinition> = {
   [def1]: unitDef,
   [def2]: unit2Def,
-}
+};
 
 const mockCatalog: CardCatalog = {
   get: (id) => {
-    const d = defs[id]
-    if (!d) throw new Error(`unknown ${id}`)
-    return d
+    const d = defs[id];
+    if (!d) throw new Error(`unknown ${id}`);
+    return d;
   },
   find: (id) => defs[id] ?? null,
   all: () => Object.values(defs),
-}
+};
 
 // ---------------------------------------------------------------------------
 // State factory
@@ -92,8 +92,8 @@ const mockCatalog: CardCatalog = {
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
   return {
-    gameId: toGameId('game1'),
-    matchId: toMatchId('match1'),
+    gameId: toGameId("game1"),
+    matchId: toMatchId("match1"),
     playerIds: [p1, p2],
     cards: {
       [handCard1]: {
@@ -102,7 +102,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         ownerId: p1,
         exhausted: false,
         buffAmount: 5,
-        keywords: ['Swift'],
+        keywords: ["Swift"],
         xp: 0,
         counters: {},
         faceDown: false,
@@ -219,77 +219,77 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     },
     turnNumber: 3,
     activePlayerId: p1,
-    phase: 'Main',
+    phase: "Main",
     chain: { isOpen: false, items: [], priority: null, focus: null, showdown: null },
     resolutionStack: [],
     pendingDecision: null,
     rng: { seed: 42 },
     scoredThisTurn: {},
-    status: 'playing',
+    status: "playing",
     winner: null,
     hotQueue: [],
     holdEligible: [],
     firstTurnSecondPlayer: false,
     ...overrides,
-  }
+  };
 }
 
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
-describe('viewFor()', () => {
-  it('returns the correct playerId in self', () => {
-    const state = makeState()
-    const view = viewFor(state, p1, mockCatalog)
-    expect(view.self.playerId).toBe(p1)
-  })
+describe("viewFor()", () => {
+  it("returns the correct playerId in self", () => {
+    const state = makeState();
+    const view = viewFor(state, p1, mockCatalog);
+    expect(view.self.playerId).toBe(p1);
+  });
 
-  it('returns opponent handCount (not a hand array)', () => {
-    const state = makeState()
-    const view = viewFor(state, p1, mockCatalog)
+  it("returns opponent handCount (not a hand array)", () => {
+    const state = makeState();
+    const view = viewFor(state, p1, mockCatalog);
     // p2 has 1 card in hand
-    expect(view.opponent.handCount).toBe(1)
+    expect(view.opponent.handCount).toBe(1);
     // OpponentView has no `hand` property
-    expect((view.opponent as Record<string, unknown>)['hand']).toBeUndefined()
-  })
+    expect((view.opponent as Record<string, unknown>)["hand"]).toBeUndefined();
+  });
 
-  it('reflects hand cards in self.hand as CardInstanceView', () => {
-    const state = makeState()
-    const view = viewFor(state, p1, mockCatalog)
-    expect(view.self.hand).toHaveLength(2)
-    const first = view.self.hand[0]!
-    expect(first.cardId).toBe(handCard1)
-    expect(first.defId).toBe(def1)
-    expect(first.hidden).toBe(false)
-    expect(first.buffAmount).toBe(5)
+  it("reflects hand cards in self.hand as CardInstanceView", () => {
+    const state = makeState();
+    const view = viewFor(state, p1, mockCatalog);
+    expect(view.self.hand).toHaveLength(2);
+    const first = view.self.hand[0]!;
+    expect(first.cardId).toBe(handCard1);
+    expect(first.defId).toBe(def1);
+    expect(first.hidden).toBe(false);
+    expect(first.buffAmount).toBe(5);
     // keywords should merge catalog base keywords + instance keywords
-    expect(first.keywords).toContain('Brave') // from def
-    expect(first.keywords).toContain('Swift') // from instance
-  })
+    expect(first.keywords).toContain("Brave"); // from def
+    expect(first.keywords).toContain("Swift"); // from instance
+  });
 
-  it('reflects mainDeck.count correctly', () => {
-    const state = makeState()
-    const view = viewFor(state, p1, mockCatalog)
+  it("reflects mainDeck.count correctly", () => {
+    const state = makeState();
+    const view = viewFor(state, p1, mockCatalog);
     // p1 has 2 main deck cards, p2 has 0
-    expect(view.self.mainDeck.count).toBe(2)
-    expect(view.opponent.mainDeck.count).toBe(0)
-  })
+    expect(view.self.mainDeck.count).toBe(2);
+    expect(view.opponent.mainDeck.count).toBe(0);
+  });
 
-  it('correctly redacts opponent face-down base cards (hidden: true, defId: null)', () => {
-    const state = makeState()
-    const view = viewFor(state, p1, mockCatalog)
+  it("correctly redacts opponent face-down base cards (hidden: true, defId: null)", () => {
+    const state = makeState();
+    const view = viewFor(state, p1, mockCatalog);
     // p2 base has baseCard2 which is faceDown: true
-    expect(view.opponent.base).toHaveLength(1)
-    const oppBase = view.opponent.base[0]!
-    expect(oppBase.hidden).toBe(true)
-    expect(oppBase.defId).toBeNull()
-    expect(oppBase.cardId).toBe(baseCard2)
-  })
+    expect(view.opponent.base).toHaveLength(1);
+    const oppBase = view.opponent.base[0]!;
+    expect(oppBase.hidden).toBe(true);
+    expect(oppBase.defId).toBeNull();
+    expect(oppBase.cardId).toBe(baseCard2);
+  });
 
-  it('shows opponent face-up base cards (hidden: false)', () => {
+  it("shows opponent face-up base cards (hidden: false)", () => {
     // Make baseCard2 face-up
-    const state = makeState()
+    const state = makeState();
     const faceUpState: GameState = {
       ...state,
       cards: {
@@ -299,43 +299,43 @@ describe('viewFor()', () => {
           faceDown: false,
         },
       },
-    }
-    const view = viewFor(faceUpState, p1, mockCatalog)
-    const oppBase = view.opponent.base[0]!
-    expect(oppBase.hidden).toBe(false)
-    expect(oppBase.defId).toBe(def2)
-  })
+    };
+    const view = viewFor(faceUpState, p1, mockCatalog);
+    const oppBase = view.opponent.base[0]!;
+    expect(oppBase.hidden).toBe(false);
+    expect(oppBase.defId).toBe(def2);
+  });
 
-  it('shared.gameId matches state.gameId', () => {
-    const state = makeState()
-    const view = viewFor(state, p1, mockCatalog)
-    expect(view.shared.gameId).toBe(state.gameId)
-  })
+  it("shared.gameId matches state.gameId", () => {
+    const state = makeState();
+    const view = viewFor(state, p1, mockCatalog);
+    expect(view.shared.gameId).toBe(state.gameId);
+  });
 
-  it('shared.pendingDecision is null when no decision is set', () => {
-    const state = makeState()
-    const view = viewFor(state, p1, mockCatalog)
-    expect(view.shared.pendingDecision).toBeNull()
-  })
+  it("shared.pendingDecision is null when no decision is set", () => {
+    const state = makeState();
+    const view = viewFor(state, p1, mockCatalog);
+    expect(view.shared.pendingDecision).toBeNull();
+  });
 
-  it('passes PlayerViewSchema validation with no errors', () => {
-    const state = makeState()
-    const view = viewFor(state, p1, mockCatalog)
-    const result = PlayerViewSchema.safeParse(view)
-    expect(result.success).toBe(true)
+  it("passes PlayerViewSchema validation with no errors", () => {
+    const state = makeState();
+    const view = viewFor(state, p1, mockCatalog);
+    const result = PlayerViewSchema.safeParse(view);
+    expect(result.success).toBe(true);
     if (!result.success) {
       // Surface any issues for debugging
-      console.error(result.error.issues)
+      console.error(result.error.issues);
     }
-  })
+  });
 
-  it('reflects buffAmount for a card with a known buffAmount', () => {
+  it("reflects buffAmount for a card with a known buffAmount", () => {
     // handCard2 has buffAmount: 0; handCard1 has buffAmount: 5
-    const state = makeState()
-    const view = viewFor(state, p1, mockCatalog)
-    const card = view.self.hand.find((c) => c.cardId === handCard1)!
-    expect(card.buffAmount).toBe(5)
-    const card2 = view.self.hand.find((c) => c.cardId === handCard2)!
-    expect(card2.buffAmount).toBe(0)
-  })
-})
+    const state = makeState();
+    const view = viewFor(state, p1, mockCatalog);
+    const card = view.self.hand.find((c) => c.cardId === handCard1)!;
+    expect(card.buffAmount).toBe(5);
+    const card2 = view.self.hand.find((c) => c.cardId === handCard2)!;
+    expect(card2.buffAmount).toBe(0);
+  });
+});

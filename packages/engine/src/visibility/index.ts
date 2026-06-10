@@ -1,4 +1,4 @@
-import type { CardCatalog } from '@thejokersthief/riftbound-card-catalog'
+import type { CardCatalog } from "@thejokersthief/riftbound-card-catalog";
 import type {
   CardId,
   CardInstanceView,
@@ -9,15 +9,15 @@ import type {
   RuneSlotView,
   SelfView,
   SharedView,
-} from '@thejokersthief/riftbound-protocol'
-import { PlayerViewSchema } from '@thejokersthief/riftbound-protocol'
-import type { GameState, RuneSlot } from '../state/types.js'
+} from "@thejokersthief/riftbound-protocol";
+import { PlayerViewSchema } from "@thejokersthief/riftbound-protocol";
+import type { GameState, RuneSlot } from "../state/types.js";
 
 function toCardInstanceView(
   cardId: CardId,
   state: GameState,
   catalog: CardCatalog,
-  hidden: boolean
+  hidden: boolean,
 ): CardInstanceView {
   if (hidden) {
     return {
@@ -29,9 +29,9 @@ function toCardInstanceView(
       counters: {},
       hidden: true,
       faceDown: true,
-    }
+    };
   }
-  const inst = state.cards[cardId]
+  const inst = state.cards[cardId];
   if (!inst) {
     return {
       cardId,
@@ -42,10 +42,10 @@ function toCardInstanceView(
       counters: {},
       hidden: true,
       faceDown: false,
-    }
+    };
   }
-  const def = catalog.find(inst.defId)
-  const baseKeywords = def?.keywords ?? []
+  const def = catalog.find(inst.defId);
+  const baseKeywords = def?.keywords ?? [];
   return {
     cardId,
     defId: inst.defId,
@@ -55,28 +55,28 @@ function toCardInstanceView(
     counters: inst.counters,
     hidden: false,
     faceDown: inst.faceDown,
-  }
+  };
 }
 
 function toRuneSlotView(slot: RuneSlot, state: GameState): RuneSlotView {
   if (!slot.filled || slot.runeCardId === null) {
-    return { filled: false, runeDefId: null }
+    return { filled: false, runeDefId: null };
   }
-  const runeInst = state.cards[slot.runeCardId]
-  return { filled: true, runeDefId: runeInst?.defId ?? null }
+  const runeInst = state.cards[slot.runeCardId];
+  return { filled: true, runeDefId: runeInst?.defId ?? null };
 }
 
 function activeBattlefieldCardId(state: GameState, playerId: PlayerId): CardId | null {
-  const bfs = Object.values(state.battlefields)
-  const controlled = bfs.find((bf) => bf != null && bf.controllerId === playerId)
-  return controlled?.cardId ?? bfs[0]?.cardId ?? null
+  const bfs = Object.values(state.battlefields);
+  const controlled = bfs.find((bf) => bf != null && bf.controllerId === playerId);
+  return controlled?.cardId ?? bfs[0]?.cardId ?? null;
 }
 
 export function viewFor(state: GameState, playerId: PlayerId, catalog: CardCatalog): PlayerView {
-  const opponentId = state.playerIds[0] === playerId ? state.playerIds[1]! : state.playerIds[0]!
+  const opponentId = state.playerIds[0] === playerId ? state.playerIds[1]! : state.playerIds[0]!;
 
-  const selfPlayer = state.players[playerId]!
-  const oppPlayer = state.players[opponentId]!
+  const selfPlayer = state.players[playerId]!;
+  const oppPlayer = state.players[opponentId]!;
 
   const self: SelfView = {
     playerId,
@@ -87,13 +87,13 @@ export function viewFor(state: GameState, playerId: PlayerId, catalog: CardCatal
     legend: toCardInstanceView(selfPlayer.legendZone, state, catalog, false),
     champion: toCardInstanceView(selfPlayer.championZone, state, catalog, false),
     battlefield: (() => {
-      const bfCardId = activeBattlefieldCardId(state, playerId)
-      return bfCardId ? toCardInstanceView(bfCardId, state, catalog, false) : null
+      const bfCardId = activeBattlefieldCardId(state, playerId);
+      return bfCardId ? toCardInstanceView(bfCardId, state, catalog, false) : null;
     })(),
     base: selfPlayer.base.map((id) => toCardInstanceView(id, state, catalog, false)),
     resources: selfPlayer.resources,
     points: selfPlayer.points,
-  }
+  };
 
   const opponent: OpponentView = {
     playerId: opponentId,
@@ -104,16 +104,16 @@ export function viewFor(state: GameState, playerId: PlayerId, catalog: CardCatal
     legend: toCardInstanceView(oppPlayer.legendZone, state, catalog, false),
     champion: toCardInstanceView(oppPlayer.championZone, state, catalog, false),
     battlefield: (() => {
-      const bfCardId = activeBattlefieldCardId(state, opponentId)
-      return bfCardId ? toCardInstanceView(bfCardId, state, catalog, false) : null
+      const bfCardId = activeBattlefieldCardId(state, opponentId);
+      return bfCardId ? toCardInstanceView(bfCardId, state, catalog, false) : null;
     })(),
     base: oppPlayer.base.map((id) => {
-      const card = state.cards[id]
-      return toCardInstanceView(id, state, catalog, card?.faceDown ?? false)
+      const card = state.cards[id];
+      return toCardInstanceView(id, state, catalog, card?.faceDown ?? false);
     }),
     resources: oppPlayer.resources,
     points: oppPlayer.points,
-  }
+  };
 
   const shared: SharedView = {
     gameId: state.gameId,
@@ -127,20 +127,20 @@ export function viewFor(state: GameState, playerId: PlayerId, catalog: CardCatal
         defId: item.defId,
         controllerId: item.controller,
         resolved: item.resolved,
-      })
+      }),
     ),
     pendingDecision: state.pendingDecision,
     matchRecord: { wins: {} },
-  }
+  };
 
-  const view: PlayerView = { self, opponent, shared }
+  const view: PlayerView = { self, opponent, shared };
 
-  if (process.env['NODE_ENV'] !== 'production') {
-    const result = PlayerViewSchema.safeParse(view)
+  if (process.env["NODE_ENV"] !== "production") {
+    const result = PlayerViewSchema.safeParse(view);
     if (!result.success) {
-      throw new Error(`viewFor validation failed: ${JSON.stringify(result.error.issues)}`)
+      throw new Error(`viewFor validation failed: ${JSON.stringify(result.error.issues)}`);
     }
   }
 
-  return view
+  return view;
 }
