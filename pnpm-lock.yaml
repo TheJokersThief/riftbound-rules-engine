@@ -8,9 +8,6 @@ importers:
 
   .:
     devDependencies:
-      '@biomejs/biome':
-        specifier: ^1.9.0
-        version: 1.9.4
       '@nx/js':
         specifier: ^20.0.0
         version: 20.8.4(@babel/traverse@7.29.7)(nx@20.8.4)
