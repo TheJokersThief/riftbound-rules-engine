@@ -42,12 +42,12 @@ export interface Compiler {
 
 export function createCompiler(fallbacks: FallbackRegistry): Compiler {
   function compile(def: CardDefinition): CompiledCard {
-    if (def.abilityText.trim() === '') {
-      return { status: 'unparsed', defId: def.id }
+    const normalized = normalize(def.abilityText)
+    if (normalized === '') {
+      return { status: 'parsed', defId: def.id, program: { type: 'Compiled', abilities: [] } }
     }
 
     try {
-      const normalized = normalize(def.abilityText)
       const segmented = segment(normalized)
       const abilities = parse(segmented)
       const validated = validate(abilities)

@@ -127,7 +127,8 @@
     ]
   },
   "sfd-t01": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-001-221": {
     "type": "Compiled",
@@ -250,7 +251,8 @@
     ]
   },
   "sfd-t02": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-002-298": {
     "type": "Compiled",
@@ -1142,7 +1144,8 @@
     ]
   },
   "unl-t06": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-006-298": {
     "type": "Compiled",
@@ -1161,10 +1164,12 @@
     ]
   },
   "ogn-007-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-007a-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-007-221": {
     "type": "Compiled",
@@ -6992,10 +6997,12 @@
     ]
   },
   "ogn-042-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-042a-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-043-298": {
     "type": "Compiled",
@@ -7699,7 +7706,8 @@
     ]
   },
   "ogn-049-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-049-221": {
     "type": "Compiled",
@@ -13653,7 +13661,8 @@
     ]
   },
   "ogn-088-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-088-221": {
     "type": "Compiled",
@@ -13740,10 +13749,12 @@
     ]
   },
   "ogn-089a-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-089-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-089a-221": {
     "type": "Compiled",
@@ -18395,10 +18406,12 @@
     ]
   },
   "ogn-126a-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-126-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "unl-126-219": {
     "type": "Compiled",
@@ -20317,7 +20330,8 @@
     ]
   },
   "ogn-142-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-143a-221": {
     "type": "Compiled",
@@ -23812,10 +23826,12 @@
     ]
   },
   "ogn-166-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-166a-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "unl-166-219": {
     "type": "Compiled",
@@ -25020,7 +25036,8 @@
     ]
   },
   "ogn-175-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-175-221": {
     "type": "Compiled",
@@ -29858,10 +29875,12 @@
     ]
   },
   "ogn-214a-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-214-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "unl-214-219": {
     "type": "Compiled",
@@ -30188,7 +30207,8 @@
     ]
   },
   "ogn-219-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-219-221": {
     "type": "Compiled",
@@ -35116,13 +35136,16 @@
     ]
   },
   "ogn-271-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-272-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-273-298": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "ogn-274-298": {
     "type": "Compiled",
@@ -36304,39 +36327,51 @@
     ]
   },
   "sfd-r01a-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r04-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r04a-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r05-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r05a-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r01-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r03a-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r06-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r06a-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r03-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r02-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   },
   "sfd-r02a-221": {
-    "type": "Unparsed"
+    "type": "Compiled",
+    "abilities": []
   }
 }
