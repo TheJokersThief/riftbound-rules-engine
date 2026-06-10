@@ -48,7 +48,7 @@ let state = createGame({
   matchId: toMatchId('match-1'),
 })
 
-// Mulligan
+// Mulligan (only the first active player gets a mulligan decision in v1)
 state = submit(state, { type: 'KeepHand', playerId: state.activePlayerId }, catalog).state
 
 // Advance automatic turn phases (no player input)
