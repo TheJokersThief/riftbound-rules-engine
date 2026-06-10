@@ -15,7 +15,7 @@ engine       → protocol, effect-ir, card-catalog
 test-helpers → engine, card-catalog, protocol  (dev only)
 ```
 
-The critical constraint: `engine` must not import `card-compiler`. The engine is deployable without the parser toolchain — card text is compiled offline and stored as `EffectNode[]` programs in the card catalog. The TypeScript compiler enforces this via project references; it cannot be violated accidentally.
+The critical constraint: `engine` must not import `card-compiler`. The engine is deployable without the parser toolchain — card ability text lives in the catalog as strings; the compiler parses them into effect programs at build time. The TypeScript compiler enforces this boundary via project references; it cannot be violated accidentally.
 
 ## Core API
 
@@ -54,19 +54,21 @@ stateDiagram-v2
             ActivePlayerTurn --> ChainOpen : card played or ability activated
             ChainOpen --> ChainOpen : submit(PassPriority) — one player passes
             ChainOpen --> ActivePlayerTurn : both players passed — items resolve
-            ActivePlayerTurn --> EndingPhase : submit(EndTurn)
+            ActivePlayerTurn --> [*] : submit(EndTurn)
         }
+
+        MainPhase --> EndingPhase
 
         state EndingPhase {
             [*] --> HoldConquerScoring
             HoldConquerScoring --> WinCheck
-            WinCheck --> RotatePlayer : score < 8
+            WinCheck --> [*] : score < 8
         }
 
-        RotatePlayer --> StartPhase : next player's turn
+        EndingPhase --> StartPhase : rotate active player
     }
 
-    WinCheck --> ended : player reaches 8 pts with strictly more than opponent
+    playing --> ended : player reaches 8 pts with strictly more than opponent
     ended --> [*]
 ```
 
@@ -79,7 +81,7 @@ stateDiagram-v2
 A Match is a best-of-3 series. `createMatchEngine(catalog)` binds the catalog once and returns:
 
 - `createMatch(config)` — initialises a `MatchState` with player decks, seed, and game-win tracking
-- `submitToMatch(matchState, action)` — routes action to current game; starts the next game automatically when one ends
+- `submitToMatch(matchState, action)` — routes action to current game; increments game-win tracking when a game ends
 - `legalMatchActions(matchState, playerId)` — delegates to `legalActions` for the current game
 - `viewForMatch(matchState, playerId)` — delegates to `viewFor` for the current game
 
@@ -110,6 +112,7 @@ while (state.status === 'playing') {
     const result = submit(state, action, catalog)
     state = result.state
     // result.events contains GameEvent[] for this action
+    if (state.status === 'ended') break
   }
 }
 
