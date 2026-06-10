@@ -147,3 +147,6 @@ vite.config.ts.timestamp-*
 
 # NX
 .nx/
+
+# Claude
+.claude/settings.local.json

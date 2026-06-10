@@ -24,3 +24,16 @@ export const AbilityIdSchema     = brandedString<'AbilityId'>()
 export const DecisionIdSchema    = brandedString<'DecisionId'>()
 export const GameIdSchema        = brandedString<'GameId'>()
 export const MatchIdSchema       = brandedString<'MatchId'>()
+
+export const toPlayerId      = (s: string): PlayerId      => PlayerIdSchema.parse(s)
+export const toCardId        = (s: string): CardId        => CardIdSchema.parse(s)
+export const toCardDefId     = (s: string): CardDefId     => CardDefIdSchema.parse(s)
+export const toZoneId        = (s: string): ZoneId        => ZoneIdSchema.parse(s)
+export const toBattlefieldId = (s: string): BattlefieldId => BattlefieldIdSchema.parse(s)
+export const toGameId        = (s: string): GameId        => GameIdSchema.parse(s)
+export const toMatchId       = (s: string): MatchId       => MatchIdSchema.parse(s)
+export const toDecisionId    = (s: string): DecisionId    => DecisionIdSchema.parse(s)
+
+export function typedObjectKeys<K extends string, V>(record: Record<K, V>): K[] {
+  return Object.keys(record) as K[]
+}
