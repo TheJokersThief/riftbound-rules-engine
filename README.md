@@ -21,7 +21,7 @@ A TypeScript rules engine for the Riftbound trading card game. Implements the 1v
 
 ```ts
 import {
-  createGame, submit, legalActions,
+  createGame, submit,
   runStartPhase, runChannelPhase, startMainPhase, createRulesQuery,
 } from '@thejokersthief/riftbound-engine'
 import { createCardCatalog, defaultSnapshotSource } from '@thejokersthief/riftbound-card-catalog'
