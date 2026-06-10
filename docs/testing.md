@@ -95,12 +95,11 @@ runScenario({
 
 ### Invariant Tests
 
-`invariants.test.ts` asserts properties that must hold regardless of what actions are taken — not for a specific board position, but as engine-wide guarantees:
+`invariants.test.ts` asserts properties that must hold across all state transitions, verified by running fuzz games:
 
-- Points never decrease during a game
-- A game with `status: 'ended'` ignores further `submit` calls
-- `pendingDecision` is cleared after a valid response action
-- `activePlayerId` is always one of the two declared players
+- Card count is conserved — no cards are created or destroyed unexpectedly
+- Points are non-decreasing for both players
+- `scoredThisTurn` has no duplicate battlefield IDs per player
 
 ### Fuzz Tests
 
