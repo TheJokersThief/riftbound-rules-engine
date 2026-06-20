@@ -1,5 +1,5 @@
 import type { CardCatalog } from "@thejokersthief/riftbound-card-catalog";
-import type { ActionNode, EffectNode } from "@thejokersthief/riftbound-effect-ir";
+import type { AbilityNode, ActionNode, EffectNode, EffectProgram, SelectorNode } from "@thejokersthief/riftbound-effect-ir";
 import type { GameEvent } from "@thejokersthief/riftbound-protocol";
 import type { RulesQuery } from "../rules-query/index.js";
 import type { EffectFrame } from "../state/stack.js";
@@ -100,6 +100,28 @@ export function step(
   return dispatchNode(headNode, updatedFrame, stateWithUpdatedFrame, query, catalog);
 }
 
-export { resolveSelector, evalCondition, evalNumberExpr, resolvePlayerRef } from "./selectors.js";
+export { resolveSelector, evalCondition, evalNumberExpr, resolvePlayerRef, selectCandidates } from "./selectors.js";
 export { executeAction } from "./actions.js";
 export { dispatchNode } from "./nodes.js";
+
+// ---------------------------------------------------------------------------
+// Target-selector helpers for chain items
+// ---------------------------------------------------------------------------
+
+export function targetSelectorOf(node: EffectNode): SelectorNode | null {
+  if (node.type === "Deal") return node.targets;
+  return null;
+}
+
+export function firstEffectNode(ability: AbilityNode): EffectNode | null {
+  if (ability.type === "Static") return null;
+  return ability.effect.type === "Sequence" ? (ability.effect.effects[0] ?? null) : ability.effect;
+}
+
+export function chainItemTargetSelector(program: EffectProgram | undefined): SelectorNode | null {
+  if (!program || program.type !== "Compiled") return null;
+  const ability = program.abilities.find((a) => a.type !== "Static");
+  if (!ability) return null;
+  const effect = firstEffectNode(ability);
+  return effect ? targetSelectorOf(effect) : null;
+}
