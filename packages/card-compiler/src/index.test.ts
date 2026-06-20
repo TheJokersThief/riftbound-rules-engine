@@ -120,6 +120,12 @@ function makeCatalog(cards: CardDefinition[]): CardCatalog {
     all() {
       return cards;
     },
+    programOf(): EffectProgram {
+      return { type: "Unparsed" };
+    },
+    programs() {
+      return new Map();
+    },
   };
 }
 
