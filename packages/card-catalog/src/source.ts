@@ -1,5 +1,9 @@
 import type { CardDefId } from "@thejokersthief/riftbound-protocol";
+import { CardDefIdSchema } from "@thejokersthief/riftbound-protocol";
+import type { EffectProgram } from "@thejokersthief/riftbound-effect-ir";
+import { EffectProgramSchema } from "@thejokersthief/riftbound-effect-ir";
 import { readFile } from "fs/promises";
+import { z } from "zod";
 import type { CardDefinition, CardType, DeckZone } from "./types.js";
 import { CardSnapshotSchema } from "./types.js";
 
@@ -126,4 +130,36 @@ export class SnapshotCardDataSource implements CardDataSource {
 
 export const defaultSnapshotSource = new SnapshotCardDataSource(
   new URL("../data/cards.json", import.meta.url).pathname,
+);
+
+// ---------------------------------------------------------------------------
+// Program data source — loads compiled EffectPrograms keyed by CardDefId
+// ---------------------------------------------------------------------------
+
+const ProgramSnapshotSchema = z.record(CardDefIdSchema, EffectProgramSchema);
+
+export interface ProgramDataSource {
+  load(): Promise<Map<string, EffectProgram>>;
+}
+
+export class SnapshotProgramDataSource implements ProgramDataSource {
+  constructor(private readonly snapshotPath: string) {}
+
+  async load(): Promise<Map<string, EffectProgram>> {
+    const raw = await readFile(this.snapshotPath, "utf-8");
+    const parsed = JSON.parse(raw) as unknown;
+    const result = ProgramSnapshotSchema.safeParse(parsed);
+    if (!result.success) {
+      throw new Error(`Failed to parse program snapshot: ${result.error.message}`);
+    }
+    const map = new Map<string, EffectProgram>();
+    for (const [defId, program] of Object.entries(result.data)) {
+      if (program !== undefined) map.set(defId, program);
+    }
+    return map;
+  }
+}
+
+export const defaultProgramSource = new SnapshotProgramDataSource(
+  new URL("../data/compiled-catalog.json", import.meta.url).pathname,
 );
