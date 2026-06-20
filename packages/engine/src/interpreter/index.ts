@@ -4,6 +4,26 @@ import type { GameEvent } from "@thejokersthief/riftbound-protocol";
 import type { RulesQuery } from "../rules-query/index.js";
 import type { EffectFrame } from "../state/stack.js";
 import type { GameState } from "../state/types.js";
+
+export function drainEffectFrames(
+  state: GameState,
+  query: RulesQuery,
+  catalog: CardCatalog,
+): { state: GameState; events: GameEvent[] } {
+  const events: GameEvent[] = [];
+  let stepResult = step(state, query, catalog);
+  while (
+    stepResult.state.pendingDecision === null &&
+    stepResult.state.resolutionStack.length > 0 &&
+    stepResult.state.resolutionStack[stepResult.state.resolutionStack.length - 1]?.type === "Effect"
+  ) {
+    events.push(...stepResult.events);
+    state = stepResult.state;
+    stepResult = step(state, query, catalog);
+  }
+  events.push(...stepResult.events);
+  return { state: stepResult.state, events };
+}
 import { executeAction } from "./actions.js";
 import { dispatchNode } from "./nodes.js";
 

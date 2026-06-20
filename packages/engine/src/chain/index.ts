@@ -1,9 +1,10 @@
 import type { CardCatalog } from "@thejokersthief/riftbound-card-catalog";
 import type { EffectProgram } from "@thejokersthief/riftbound-effect-ir";
 import type { GameEvent } from "@thejokersthief/riftbound-protocol";
-import { step } from "../interpreter/index.js";
+import { drainEffectFrames } from "../interpreter/index.js";
 import type { RulesQuery } from "../rules-query/index.js";
 import type { GameState } from "../state/types.js";
+import { feprStep } from "./fepr.js";
 import { drainHot } from "./hot.js";
 
 // ---------------------------------------------------------------------------
@@ -22,26 +23,39 @@ export function advance(
 
   const allEvents: GameEvent[] = [];
 
-  const hotResult = drainHot(state, query, catalog, programs);
-  state = hotResult.state;
-  allEvents.push(...hotResult.events);
+  const progressSignal = (s: GameState): string => {
+    const top = s.resolutionStack[s.resolutionStack.length - 1];
+    const topTag = top ? (top.type === "Chain" ? `Chain:${top.resumeAt}` : top.type) : "none";
+    const resolved = s.chain.items.filter((i) => i.resolved).length;
+    return `${s.resolutionStack.length}|${topTag}|${resolved}|${s.pendingDecision?.type ?? "none"}`;
+  };
 
-  if (state.pendingDecision !== null) {
-    return { state, events: allEvents };
-  }
+  for (let guard = 0; guard < 10_000; guard++) {
+    const hotResult = drainHot(state, query, catalog, programs);
+    state = hotResult.state;
+    allEvents.push(...hotResult.events);
+    if (state.pendingDecision !== null) break;
 
-  let stepResult = step(state, query, catalog);
-  while (
-    stepResult.state.pendingDecision === null &&
-    stepResult.state.resolutionStack.length > 0 &&
-    stepResult.state.resolutionStack[stepResult.state.resolutionStack.length - 1]?.type === "Effect"
-  ) {
-    allEvents.push(...stepResult.events);
-    state = stepResult.state;
-    stepResult = step(state, query, catalog);
+    const top = state.resolutionStack[state.resolutionStack.length - 1];
+    if (!top) break;
+
+    const before = progressSignal(state);
+
+    if (top.type === "Effect") {
+      const r = drainEffectFrames(state, query, catalog);
+      allEvents.push(...r.events);
+      state = r.state;
+    } else if (top.type === "Chain") {
+      const r = feprStep(state, query, catalog, programs);
+      allEvents.push(...r.events);
+      state = r.state;
+    } else {
+      break;
+    }
+
+    if (state.pendingDecision !== null) break;
+    if (progressSignal(state) === before) break;
   }
-  allEvents.push(...stepResult.events);
-  state = stepResult.state;
 
   return { state, events: allEvents };
 }
