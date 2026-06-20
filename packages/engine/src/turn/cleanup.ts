@@ -58,5 +58,14 @@ export function runCleanup(
     holdEligible: [],
   };
 
+  const clearedCards = { ...state.cards };
+  for (const id of Object.keys(clearedCards) as (keyof typeof clearedCards)[]) {
+    const card = clearedCards[id];
+    if (card && card.damage !== 0) {
+      clearedCards[id] = { ...card, damage: 0 };
+    }
+  }
+  state = { ...state, cards: clearedCards };
+
   return { state, events: allEvents };
 }
