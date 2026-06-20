@@ -20,6 +20,7 @@
     "refresh": "tsx scripts/refresh-catalog.ts"
   },
   "dependencies": {
+    "@thejokersthief/riftbound-effect-ir": "workspace:*",
     "@thejokersthief/riftbound-protocol": "workspace:*",
     "zod": "^3.24.0"
   },

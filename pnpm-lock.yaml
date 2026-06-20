@@ -54,6 +54,9 @@ importers:
 
   packages/card-catalog:
     dependencies:
+      '@thejokersthief/riftbound-effect-ir':
+        specifier: workspace:*
+        version: link:../effect-ir
       '@thejokersthief/riftbound-protocol':
         specifier: workspace:*
         version: link:../protocol

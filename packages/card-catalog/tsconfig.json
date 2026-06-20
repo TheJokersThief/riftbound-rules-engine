@@ -5,7 +5,8 @@
     "rootDir": "src"
   },
   "references": [
-    { "path": "../protocol" }
+    { "path": "../protocol" },
+    { "path": "../effect-ir" }
   ],
   "include": ["src"],
   "exclude": ["dist"]
