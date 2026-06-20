@@ -13,6 +13,44 @@ function updateCard(
   return { ...state, cards: { ...state.cards, [cardId]: updater(card) } };
 }
 
+function removeCardFromAllZones(state: GameState, cardId: CardId): GameState {
+  const players = { ...state.players } as Record<PlayerId, PlayerState>;
+  for (const pid of typedObjectKeys(players)) {
+    const p = players[pid]!;
+    players[pid] = {
+      ...p,
+      hand: p.hand.filter((id) => id !== cardId),
+      mainDeck: p.mainDeck.filter((id) => id !== cardId),
+      runeDeck: p.runeDeck.filter((id) => id !== cardId),
+      base: p.base.filter((id) => id !== cardId),
+      trash: p.trash.filter((id) => id !== cardId),
+    };
+  }
+  const battlefields = { ...state.battlefields } as Record<BattlefieldId, BattlefieldState>;
+  for (const bfId of typedObjectKeys(battlefields)) {
+    const bf = battlefields[bfId]!;
+    if (bf.units.includes(cardId)) {
+      battlefields[bfId] = { ...bf, units: bf.units.filter((id) => id !== cardId) };
+    }
+  }
+  return { ...state, players, battlefields };
+}
+
+function addCardToZone(state: GameState, cardId: CardId, toZone: string): GameState {
+  const ownerId = state.cards[cardId]?.ownerId;
+  if (!ownerId) return state;
+  const player = state.players[ownerId]!;
+  const destination = toZone.startsWith("discard") ? "trash" : toZone;
+  switch (destination) {
+    case "base":
+      return { ...state, players: { ...state.players, [ownerId]: { ...player, base: [...player.base, cardId] } } };
+    case "trash":
+      return { ...state, players: { ...state.players, [ownerId]: { ...player, trash: [...player.trash, cardId] } } };
+    default:
+      return state;
+  }
+}
+
 export function fold(state: GameState, event: GameEvent): GameState {
   switch (event.type) {
     case "GameStarted":
@@ -30,10 +68,10 @@ export function fold(state: GameState, event: GameEvent): GameState {
       return { ...state, phase: event.phase };
 
     case "ChainOpened":
-      return { ...state, chain: { ...state.chain, isOpen: true } };
+      return { ...state, chain: { ...state.chain, isOpen: true, passes: 0 } };
 
     case "ChainClosed":
-      return { ...state, chain: { ...state.chain, isOpen: false, items: [], showdown: null } };
+      return { ...state, chain: { ...state.chain, isOpen: false, passes: 0, items: [], showdown: null } };
 
     case "ShowdownOpened":
       return {
@@ -190,9 +228,13 @@ export function fold(state: GameState, event: GameEvent): GameState {
       return { ...state, status: "ended", winner: event.winner };
 
     // Events handled by higher-level resolvers — no direct state mapping in this layer
+    case "CardMoved": {
+      const removed = removeCardFromAllZones(state, event.cardId);
+      return addCardToZone(removed, event.cardId, event.toZone);
+    }
+
     case "BattlefieldChosen":
     case "MulliganChosen":
-    case "CardMoved":
     case "CardRecalled":
     case "CardReturnedToHand":
     case "CardCountered":

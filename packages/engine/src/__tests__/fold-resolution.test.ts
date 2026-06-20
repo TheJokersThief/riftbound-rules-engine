@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toPlayerId, toCardDefId, toMatchId } from "@thejokersthief/riftbound-protocol";
+import { toPlayerId, toCardDefId, toMatchId, toZoneId } from "@thejokersthief/riftbound-protocol";
 import { createGame, fold } from "../index.js";
 import type { DeckConfig } from "../match/state.js";
 
@@ -31,5 +31,32 @@ describe("fold CardPlayed", () => {
     const cardId = state.players[P1]!.hand[0]!;
     const next = fold(state, { type: "CardPlayed", playerId: P1, cardId });
     expect(next.players[P1]!.hand).not.toContain(cardId);
+  });
+});
+
+describe("fold CardMoved", () => {
+  it("moves a card from hand to base", () => {
+    const state = newGame();
+    const cardId = state.players[P1]!.hand[0]!;
+    const next = fold(state, {
+      type: "CardMoved",
+      cardId,
+      fromZone: toZoneId("hand"),
+      toZone: toZoneId("base"),
+    });
+    expect(next.players[P1]!.hand).not.toContain(cardId);
+    expect(next.players[P1]!.base).toContain(cardId);
+  });
+
+  it("routes a discard-* destination to the owner's trash", () => {
+    const state = newGame();
+    const cardId = state.players[P1]!.hand[0]!;
+    const next = fold(state, {
+      type: "CardMoved",
+      cardId,
+      fromZone: toZoneId("hand"),
+      toZone: toZoneId(`discard-${P1}`),
+    });
+    expect(next.players[P1]!.trash).toContain(cardId);
   });
 });
