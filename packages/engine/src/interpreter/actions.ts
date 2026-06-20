@@ -41,7 +41,10 @@ export function executeAction(
 ): { state: GameState; events: GameEvent[] } {
   switch (node.type) {
     case "Deal": {
-      const targets = resolveSelector(node.targets, state, frame.sourceId, query, catalog);
+      const targets =
+        frame.targets.length > 0
+          ? frame.targets
+          : resolveSelector(node.targets, state, frame.sourceId, query, catalog);
       const events: GameEvent[] = [];
       let s = state;
       for (const targetId of targets) {
@@ -49,15 +52,23 @@ export function executeAction(
         const bonus = node.bonus
           ? evalNumberExpr(node.bonus, s, frame.sourceId, query, catalog)
           : 0;
-        const event: GameEvent = {
+        const dmg: GameEvent = {
           type: "DamageDealt",
           sourceId: frame.sourceId,
           targetId,
           amount,
           bonus,
         };
-        events.push(event);
-        s = fold(s, event);
+        events.push(dmg);
+        s = fold(s, dmg);
+        const might = query.mightOf(targetId);
+        const total = s.cards[targetId]?.damage ?? 0;
+        const lethal = (might === 0 && total > 0) || (might > 0 && total >= might);
+        if (lethal) {
+          const kill: GameEvent = { type: "CardKilled", cardId: targetId };
+          events.push(kill);
+          s = fold(s, kill);
+        }
       }
       return { state: s, events };
     }

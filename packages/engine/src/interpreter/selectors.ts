@@ -51,10 +51,10 @@ export function resolvePlayerRef(ref: PlayerRef, state: GameState, sourceId: Car
 }
 
 // ---------------------------------------------------------------------------
-// resolveSelector
+// selectCandidates / resolveSelector
 // ---------------------------------------------------------------------------
 
-export function resolveSelector(
+export function selectCandidates(
   selector: SelectorNode,
   state: GameState,
   sourceId: CardId,
@@ -133,6 +133,18 @@ export function resolveSelector(
       }
     });
   });
+
+  return filtered;
+}
+
+export function resolveSelector(
+  selector: SelectorNode,
+  state: GameState,
+  sourceId: CardId,
+  query: RulesQuery,
+  catalog: CardCatalog,
+): CardId[] {
+  const filtered = selectCandidates(selector, state, sourceId, query, catalog);
 
   // Step 5 — Quantity
   const qty = selector.quantity;
