@@ -69,6 +69,20 @@ export function fold(state: GameState, event: GameEvent): GameState {
       };
     }
 
+    case "CardPlayed": {
+      const player = state.players[event.playerId]!;
+      return {
+        ...state,
+        players: {
+          ...state.players,
+          [event.playerId]: {
+            ...player,
+            hand: player.hand.filter((id) => id !== event.cardId),
+          },
+        },
+      };
+    }
+
     case "CardDiscarded": {
       const player = state.players[event.playerId]!;
       return {
@@ -178,7 +192,6 @@ export function fold(state: GameState, event: GameEvent): GameState {
     // Events handled by higher-level resolvers — no direct state mapping in this layer
     case "BattlefieldChosen":
     case "MulliganChosen":
-    case "CardPlayed":
     case "CardMoved":
     case "CardRecalled":
     case "CardReturnedToHand":
