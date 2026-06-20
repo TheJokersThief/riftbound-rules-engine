@@ -60,3 +60,26 @@ describe("fold CardMoved", () => {
     expect(next.players[P1]!.trash).toContain(cardId);
   });
 });
+
+describe("fold DamageDealt + CardKilled", () => {
+  it("accrues damage on the target", () => {
+    const state = newGame();
+    const cardId = state.players[P1]!.hand[0]!;
+    let next = fold(state, { type: "DamageDealt", sourceId: cardId, targetId: cardId, amount: 2, bonus: 1 });
+    expect(next.cards[cardId]!.damage).toBe(3);
+    next = fold(next, { type: "DamageDealt", sourceId: cardId, targetId: cardId, amount: 1, bonus: 0 });
+    expect(next.cards[cardId]!.damage).toBe(4);
+  });
+
+  it("CardKilled moves the card to the owner's trash and clears its damage", () => {
+    const state = newGame();
+    const cardId = state.players[P1]!.hand[0]!;
+    // Put the card in base and give it damage so we can observe the reset.
+    let next = fold(state, { type: "CardMoved", cardId, fromZone: toZoneId("hand"), toZone: toZoneId("base") });
+    next = fold(next, { type: "DamageDealt", sourceId: cardId, targetId: cardId, amount: 5, bonus: 0 });
+    next = fold(next, { type: "CardKilled", cardId });
+    expect(next.players[P1]!.base).not.toContain(cardId);
+    expect(next.players[P1]!.trash).toContain(cardId);
+    expect(next.cards[cardId]!.damage).toBe(0);
+  });
+});

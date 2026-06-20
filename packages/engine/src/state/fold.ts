@@ -161,6 +161,7 @@ export function fold(state: GameState, event: GameEvent): GameState {
 
     case "CardKilled": {
       const killedId = event.cardId;
+      const ownerId = state.cards[killedId]?.ownerId;
       const battlefields = { ...state.battlefields } as Record<BattlefieldId, BattlefieldState>;
       for (const bfId of typedObjectKeys(battlefields)) {
         const bf = battlefields[bfId]!;
@@ -171,11 +172,15 @@ export function fold(state: GameState, event: GameEvent): GameState {
       const players = { ...state.players } as Record<PlayerId, PlayerState>;
       for (const pid of typedObjectKeys(players)) {
         const p = players[pid]!;
-        if (p.base.includes(killedId)) {
-          players[pid] = { ...p, base: p.base.filter((id) => id !== killedId) };
-        }
+        const inBase = p.base.includes(killedId);
+        players[pid] = {
+          ...p,
+          base: inBase ? p.base.filter((id) => id !== killedId) : p.base,
+          trash: pid === ownerId ? [...p.trash, killedId] : p.trash,
+        };
       }
-      return { ...state, battlefields, players };
+      const withZones: GameState = { ...state, battlefields, players };
+      return updateCard(withZones, killedId, (card) => ({ ...card, damage: 0 }));
     }
 
     case "ControlChanged":
@@ -233,6 +238,12 @@ export function fold(state: GameState, event: GameEvent): GameState {
       return addCardToZone(removed, event.cardId, event.toZone);
     }
 
+    case "DamageDealt":
+      return updateCard(state, event.targetId, (card) => ({
+        ...card,
+        damage: card.damage + event.amount + event.bonus,
+      }));
+
     case "BattlefieldChosen":
     case "MulliganChosen":
     case "CardRecalled":
@@ -243,7 +254,6 @@ export function fold(state: GameState, event: GameEvent): GameState {
     case "CardRevealed":
     case "CardRecycled":
     case "RuneChanneled":
-    case "DamageDealt":
     case "TurnEnded":
     case "MatchEnded":
     case "ExtraTurnGranted":
