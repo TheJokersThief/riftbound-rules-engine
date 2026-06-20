@@ -1,5 +1,7 @@
 import type { CardDefId } from "@thejokersthief/riftbound-protocol";
-import type { CardDataSource } from "./source.js";
+import type { EffectProgram } from "@thejokersthief/riftbound-effect-ir";
+import type { CardDataSource, ProgramDataSource } from "./source.js";
+import { defaultProgramSource } from "./source.js";
 import type { CardDefinition } from "./types.js";
 import { CardDefinitionSchema } from "./types.js";
 
@@ -7,10 +9,16 @@ export interface CardCatalog {
   get(id: CardDefId): CardDefinition;
   find(id: CardDefId): CardDefinition | null;
   all(): CardDefinition[];
+  programOf(id: CardDefId): EffectProgram;
+  programs(): ReadonlyMap<string, EffectProgram>;
 }
 
-export async function createCardCatalog(source: CardDataSource): Promise<CardCatalog> {
+export async function createCardCatalog(
+  source: CardDataSource,
+  programSource: ProgramDataSource = defaultProgramSource,
+): Promise<CardCatalog> {
   const entries = await source.load();
+  const programMap = await programSource.load();
   const map = new Map<CardDefId, CardDefinition>();
 
   for (const entry of entries) {
@@ -21,6 +29,8 @@ export async function createCardCatalog(source: CardDataSource): Promise<CardCat
     }
     map.set(result.data.id, result.data);
   }
+
+  const unparsed: EffectProgram = { type: "Unparsed" };
 
   return Object.freeze({
     get(id: CardDefId): CardDefinition {
@@ -37,6 +47,14 @@ export async function createCardCatalog(source: CardDataSource): Promise<CardCat
 
     all(): CardDefinition[] {
       return Array.from(map.values());
+    },
+
+    programOf(id: CardDefId): EffectProgram {
+      return programMap.get(id) ?? unparsed;
+    },
+
+    programs(): ReadonlyMap<string, EffectProgram> {
+      return programMap;
     },
   });
 }
