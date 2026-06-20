@@ -1,10 +1,6 @@
 import type { CardCatalog, CardDefinition } from "@thejokersthief/riftbound-card-catalog";
 import type {
-  BattlefieldId,
   CardDefId,
-  CardId,
-  GameId,
-  MatchId,
   PlayerId,
 } from "@thejokersthief/riftbound-protocol";
 import {
@@ -14,7 +10,6 @@ import {
   toGameId,
   toMatchId,
   toPlayerId,
-  toZoneId,
 } from "@thejokersthief/riftbound-protocol";
 import { describe, expect, it } from "vitest";
 import { createGame, deserialize, legalActions, serialize, submit } from "../index.js";
@@ -110,6 +105,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         ownerId: p1,
         exhausted: false,
         buffAmount: 0,
+        damage: 0,
         keywords: [],
         xp: 0,
         counters: {},
@@ -125,6 +121,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         legendZone: toCardId("leg1"),
         championZone: toCardId("chm1"),
         base: [],
+        trash: [],
         resources: { energy: 3, power: 2 },
         points: 0,
       },
@@ -136,6 +133,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
         legendZone: toCardId("leg2"),
         championZone: toCardId("chm2"),
         base: [],
+        trash: [],
         resources: { energy: 3, power: 2 },
         points: 0,
       },
@@ -151,7 +149,7 @@ function makeState(overrides: Partial<GameState> = {}): GameState {
     turnNumber: 1,
     activePlayerId: p1,
     phase: "Main",
-    chain: { isOpen: false, items: [], priority: null, focus: null, showdown: null },
+    chain: { isOpen: false, passes: 0, items: [], priority: null, focus: null, showdown: null },
     resolutionStack: [],
     pendingDecision: null,
     rng: { seed: 12345 },

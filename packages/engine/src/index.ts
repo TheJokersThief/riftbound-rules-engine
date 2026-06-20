@@ -560,7 +560,7 @@ export function legalActions(state: GameState, playerId: PlayerId, catalog: Card
 
 function passPriority(
   state: GameState,
-  playerId: PlayerId,
+  _playerId: PlayerId,
   query: ReturnType<typeof createRulesQuery>,
   catalog: CardCatalog,
   programs: ReadonlyMap<string, EffectProgram>,

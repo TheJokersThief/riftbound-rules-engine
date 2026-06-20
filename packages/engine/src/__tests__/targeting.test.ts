@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toPlayerId, toCardDefId, toMatchId } from "@thejokersthief/riftbound-protocol";
+import { toPlayerId, toCardDefId, toMatchId, toDecisionId } from "@thejokersthief/riftbound-protocol";
 import { createGame, submit, fold } from "../index.js";
 import { createCardCatalog, defaultSnapshotSource } from "@thejokersthief/riftbound-card-catalog";
 import type { GameState } from "../state/types.js";
@@ -22,7 +22,7 @@ describe("target selection for a damage spell", () => {
     state = submit(state, { type: "KeepHand", playerId: state.activePlayerId }, catalog).state;
 
     // Craft a ChooseTargets pending decision directly
-    const decisionId = "dec_test";
+    const decisionId = toDecisionId("dec_test");
     const enemyA = Object.values(state.cards).find((c) => c!.ownerId === P2)!.id;
     const enemyB = Object.values(state.cards).filter((c) => c!.ownerId === P2)[1]!.id;
     const bfId = Object.keys(state.battlefields)[0]!;
@@ -36,9 +36,9 @@ describe("target selection for a damage spell", () => {
     state = {
       ...state,
       chain: { ...state.chain, items: [item] },
-      resolutionStack: [{ type: "Chain", resumeAt: "Execute" }],
-      pendingDecision: { type: "ChooseTargets", playerId: P1, decisionId, prompt: "Choose a target", min: 1, max: 1 },
-    } as GameState;
+      resolutionStack: [{ type: "Chain" as const, resumeAt: "Execute" as const }],
+      pendingDecision: { type: "ChooseTargets" as const, playerId: P1, decisionId, prompt: "Choose a target", min: 1, max: 1 },
+    };
 
     const chosen = enemyA;
     const result = submit(state, { type: "ChooseTargets", playerId: P1, decisionId, targets: [chosen] }, catalog);
