@@ -129,6 +129,7 @@ export function buildBoard(config: {
       xp: 0,
       counters: {},
       faceDown: false,
+      damage: 0,
     },
     [p1ChampionCardId]: {
       id: p1ChampionCardId,
@@ -140,6 +141,7 @@ export function buildBoard(config: {
       xp: 0,
       counters: {},
       faceDown: false,
+      damage: 0,
     },
     [p2LegendCardId]: {
       id: p2LegendCardId,
@@ -151,6 +153,7 @@ export function buildBoard(config: {
       xp: 0,
       counters: {},
       faceDown: false,
+      damage: 0,
     },
     [p2ChampionCardId]: {
       id: p2ChampionCardId,
@@ -162,6 +165,7 @@ export function buildBoard(config: {
       xp: 0,
       counters: {},
       faceDown: false,
+      damage: 0,
     },
   };
 
@@ -184,6 +188,7 @@ export function buildBoard(config: {
           xp: partial.xp ?? 0,
           counters: partial.counters ?? {},
           faceDown: partial.faceDown ?? false,
+          damage: partial.damage ?? 0,
         };
       }
     }
@@ -202,6 +207,7 @@ export function buildBoard(config: {
       legendZone: override.legendZone ?? legendId,
       championZone: override.championZone ?? championId,
       base: override.base ?? [],
+      trash: override.trash ?? [],
       resources: override.resources ?? { energy: 3, power: 2 },
       points: override.points ?? 0,
     };
@@ -242,7 +248,7 @@ export function buildBoard(config: {
     turnNumber: 1,
     activePlayerId: p1,
     phase: "Main",
-    chain: { isOpen: false, items: [], priority: null, focus: null, showdown: null },
+    chain: { isOpen: false, passes: 0, items: [], priority: null, focus: null, showdown: null },
     resolutionStack: [],
     pendingDecision: null,
     rng: { seed },
