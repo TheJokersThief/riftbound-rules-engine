@@ -55,4 +55,28 @@ describe("advance() drives a Chain frame", () => {
     expect(result.state.resolutionStack.length).toBe(0);
     expect(result.state.chain.isOpen).toBe(false);
   });
+
+  it("sends a resolved Spell source to its owner's trash (even with no parsed ability)", async () => {
+    const catalog = await createCardCatalog(defaultSnapshotSource);
+    let state = createGame({ players: [P1, P2], decks: { [P1]: deck(), [P2]: deck() }, seed: 1, matchId: toMatchId("m1") });
+    // Re-tag a hand card as a Spell defId from the catalog
+    const spellDef = catalog.all().find((d) => d.cardType === "Spell");
+    expect(spellDef).toBeDefined();
+    const cardId = state.players[P1]!.hand[0]!;
+    state = { ...state, cards: { ...state.cards, [cardId]: { ...state.cards[cardId]!, defId: spellDef!.id } } };
+    // Remove from hand so it is "in flight" like a played spell
+    state = fold(state, { type: "CardPlayed", playerId: P1, cardId });
+    const item: ChainItem = { id: "ci1", sourceId: cardId, defId: spellDef!.id, controller: P1, targets: [], resolved: false };
+    state = fold(state, { type: "ChainOpened" });
+    state = {
+      ...state,
+      pendingDecision: null,
+      status: "playing" as const,
+      chain: { ...state.chain, items: [item] },
+      resolutionStack: [{ type: "Chain" as const, resumeAt: "Resolve" }],
+    };
+    const query = createRulesQuery(state, catalog);
+    const result = advance(state, query, catalog, catalog.programs());
+    expect(result.state.players[P1]!.trash).toContain(cardId);
+  });
 });

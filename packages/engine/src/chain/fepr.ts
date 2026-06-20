@@ -1,6 +1,7 @@
 import type { CardCatalog } from "@thejokersthief/riftbound-card-catalog";
 import type { EffectProgram } from "@thejokersthief/riftbound-effect-ir";
 import type { GameEvent } from "@thejokersthief/riftbound-protocol";
+import { toZoneId } from "@thejokersthief/riftbound-protocol";
 import { step } from "../interpreter/index.js";
 import type { RulesQuery } from "../rules-query/index.js";
 import { fold } from "../state/fold.js";
@@ -77,6 +78,21 @@ export function feprStep(
         return { state, events: allEvents };
       }
 
+      const trashIfSpell = (s: GameState): GameState => {
+        const sourceDef = catalog.find(unresolved.defId);
+        if (sourceDef?.cardType !== "Spell") return s;
+        const owner = s.cards[unresolved.sourceId]?.ownerId;
+        if (!owner) return s;
+        const moveEvent: GameEvent = {
+          type: "CardMoved",
+          cardId: unresolved.sourceId,
+          fromZone: toZoneId("inflight"),
+          toZone: toZoneId(`discard-${owner}`),
+        };
+        allEvents.push(moveEvent);
+        return fold(s, moveEvent);
+      };
+
       const program = programs.get(unresolved.defId);
       if (!program || program.type === "Unparsed") {
         state = {
@@ -88,6 +104,7 @@ export function feprStep(
             ),
           },
         };
+        state = trashIfSpell(state);
         return feprStep(state, query, catalog, programs);
       }
 
@@ -134,6 +151,7 @@ export function feprStep(
         state = stepResult.state;
       }
 
+      state = trashIfSpell(state);
       return { state, events: allEvents };
     }
   }
