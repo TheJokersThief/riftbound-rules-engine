@@ -25,6 +25,7 @@ export const PlayerStateSchema = z.object({
   legendZone: CardIdSchema,
   championZone: CardIdSchema,
   base: z.array(CardIdSchema),
+  trash: z.array(CardIdSchema),
   resources: z.object({ energy: z.number().int(), power: z.number().int() }),
   points: z.number().int().nonnegative(),
 });
@@ -36,6 +37,7 @@ export const CardInstanceSchema = z.object({
   ownerId: PlayerIdSchema,
   exhausted: z.boolean(),
   buffAmount: z.number().int(),
+  damage: z.number().int().nonnegative(),
   keywords: z.array(z.string()),
   xp: z.number().int().nonnegative(),
   counters: z.record(z.string(), z.number().int()),
@@ -69,6 +71,7 @@ export type ShowdownState = z.infer<typeof ShowdownStateSchema>;
 
 export const ChainStateSchema = z.object({
   isOpen: z.boolean(),
+  passes: z.number().int().nonnegative(),
   items: z.array(ChainItemSchema),
   priority: PlayerIdSchema.nullable(),
   focus: PlayerIdSchema.nullable(),
