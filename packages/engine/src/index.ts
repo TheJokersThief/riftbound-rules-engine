@@ -10,7 +10,7 @@ import type {
 } from "@thejokersthief/riftbound-protocol";
 import { toBattlefieldId, toCardId, toDecisionId, toGameId, toMatchId, toZoneId } from "@thejokersthief/riftbound-protocol";
 import type { EffectProgram } from "@thejokersthief/riftbound-effect-ir";
-import { advance } from "./chain/index.js";
+import { advance, closeShowdown } from "./chain/index.js";
 import { collectTriggers } from "./chain/hot.js";
 import type { GameEngineFunctions } from "./match/index.js";
 import {
@@ -304,7 +304,11 @@ export function submit(
     }
 
     case "PassFocus": {
-      return advance(state, query, catalog, programs);
+      const cleared = { ...state, pendingDecision: null };
+      const { state: afterClose, events: closeEvents } = closeShowdown(cleared);
+      const q2 = createRulesQuery(afterClose, catalog);
+      const adv = advance(afterClose, q2, catalog, programs);
+      return { state: adv.state, events: [...closeEvents, ...adv.events] };
     }
 
     case "PlayCard": {
@@ -338,7 +342,8 @@ export function submit(
 
       if (def?.cardType === "Spell") {
         // Spell → chain item, resolved via priority passing.
-        if (!s.chain.isOpen) {
+        const chainWasOpen = s.chain.isOpen;
+        if (!chainWasOpen) {
           const opened: GameEvent = { type: "ChainOpened" };
           s = fold(s, opened);
           events.push(opened);
@@ -355,7 +360,12 @@ export function submit(
         s = {
           ...s,
           chain: { ...s.chain, items: [...s.chain.items, item], priority: opponent, passes: 0 },
-          resolutionStack: [...s.resolutionStack, { type: "Chain" as const, resumeAt: "Execute" as const }],
+          // If the chain was already open, a Chain:Execute frame is already on the stack.
+          // Don't push a duplicate — just let the existing frame re-issue the priority window
+          // after advance() reads the updated chain.priority.
+          resolutionStack: chainWasOpen
+            ? s.resolutionStack
+            : [...s.resolutionStack, { type: "Chain" as const, resumeAt: "Execute" as const }],
         };
 
         // If the spell needs a target choice, issue ChooseTargets before yielding the priority window.
