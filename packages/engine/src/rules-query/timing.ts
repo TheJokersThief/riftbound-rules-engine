@@ -11,8 +11,8 @@ export function checkTiming(def: CardDefinition, state: GameState): boolean {
       // Main phase only; chain open/closed does not restrict unit/gear play
       return state.phase === "Main";
     case "Spell":
-      // Main phase with an open chain
-      return state.phase === "Main" && state.chain.isOpen;
+      // Main phase. Playing a spell opens the chain if one is not already open.
+      return state.phase === "Main";
     case "Rune":
       // Channel phase only
       return state.phase === "Channel";

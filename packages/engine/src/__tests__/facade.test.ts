@@ -74,6 +74,8 @@ const mockCatalog: CardCatalog = {
   },
   find: (id) => defs[id] ?? null,
   all: () => Object.values(defs),
+  programOf: (_id) => ({ type: "Unparsed" }),
+  programs: () => new Map(),
 };
 
 // ---------------------------------------------------------------------------

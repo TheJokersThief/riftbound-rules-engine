@@ -8,8 +8,10 @@ import type {
   MatchId,
   PlayerId,
 } from "@thejokersthief/riftbound-protocol";
-import { toBattlefieldId, toCardId, toGameId, toMatchId } from "@thejokersthief/riftbound-protocol";
+import { toBattlefieldId, toCardId, toDecisionId, toGameId, toMatchId, toZoneId } from "@thejokersthief/riftbound-protocol";
+import type { EffectProgram } from "@thejokersthief/riftbound-effect-ir";
 import { advance } from "./chain/index.js";
+import { collectTriggers } from "./chain/hot.js";
 import type { GameEngineFunctions } from "./match/index.js";
 import {
   createMatch as _createMatch,
@@ -24,6 +26,7 @@ import { fold } from "./state/fold.js";
 import type { BattlefieldState, CardInstance, GameState, PlayerState } from "./state/types.js";
 import { advanceTurn } from "./turn/index.js";
 import { viewFor as _viewFor } from "./visibility/index.js";
+import { chainItemTargetSelector, selectCandidates } from "./interpreter/index.js";
 
 // ---------------------------------------------------------------------------
 // Re-exports
@@ -289,32 +292,127 @@ export function submit(
   }
 
   const query = createRulesQuery(state, catalog);
+  const programs = catalog.programs();
 
   switch (action.type) {
     case "EndTurn": {
-      return advanceTurn(state, query, catalog);
+      return advanceTurn(state, query, catalog, programs);
     }
 
-    case "PassPriority":
+    case "PassPriority": {
+      return passPriority(state, action.playerId, query, catalog, programs);
+    }
+
     case "PassFocus": {
-      return advance(state, query, catalog);
+      return advance(state, query, catalog, programs);
     }
 
     case "PlayCard": {
-      const event: GameEvent = {
-        type: "CardPlayed",
-        playerId: action.playerId,
-        cardId: action.cardId,
+      const playerId = action.playerId;
+      const cardId = action.cardId;
+      if (!query.canBePlayed(cardId, playerId)) {
+        return { state, events: [] };
+      }
+      const def = catalog.find(state.cards[cardId]!.defId);
+      const cost = def?.playCost;
+
+      const events: GameEvent[] = [];
+      let s = state;
+
+      // Pay cost (energy/power are signed deltas).
+      if (cost) {
+        const pay: GameEvent = {
+          type: "ResourceAdded",
+          playerId,
+          energy: -cost.energy,
+          power: -cost.power,
+        };
+        s = fold(s, pay);
+        events.push(pay);
+      }
+
+      // Leave hand.
+      const played: GameEvent = { type: "CardPlayed", playerId, cardId };
+      s = fold(s, played);
+      events.push(played);
+
+      if (def?.cardType === "Spell") {
+        // Spell → chain item, resolved via priority passing.
+        if (!s.chain.isOpen) {
+          const opened: GameEvent = { type: "ChainOpened" };
+          s = fold(s, opened);
+          events.push(opened);
+        }
+        const opponent = s.playerIds[0] === playerId ? s.playerIds[1] : s.playerIds[0];
+        const item = {
+          id: `ci_${Math.random().toString(36).slice(2, 9)}`,
+          sourceId: cardId,
+          defId: state.cards[cardId]!.defId,
+          controller: playerId,
+          targets: action.targets?.targets ?? [],
+          resolved: false,
+        };
+        s = {
+          ...s,
+          chain: { ...s.chain, items: [...s.chain.items, item], priority: opponent, passes: 0 },
+          resolutionStack: [...s.resolutionStack, { type: "Chain" as const, resumeAt: "Execute" as const }],
+        };
+
+        // If the spell needs a target choice, issue ChooseTargets before yielding the priority window.
+        const selector = chainItemTargetSelector(programs.get(item.defId));
+        if (selector && (selector.chooser === "You" || selector.chooser === "Opponent")) {
+          const q2 = createRulesQuery(s, catalog);
+          const candidates = selectCandidates(selector, s, cardId, q2, catalog);
+          if (candidates.length > 1) {
+            const decisionId = toDecisionId(`dec_${Math.random().toString(36).slice(2, 9)}`);
+            s = {
+              ...s,
+              pendingDecision: { type: "ChooseTargets", playerId, decisionId, prompt: "Choose a target", min: 1, max: 1 },
+            };
+            return { state: s, events };
+          }
+        }
+
+        const q = createRulesQuery(s, catalog);
+        const adv = advance(s, q, catalog, programs);
+        return { state: adv.state, events: [...events, ...adv.events] };
+      }
+
+      // Unit / Gear → enter base, then collect WhenPlayed/WhenEntersPlay triggers.
+      const moved: GameEvent = {
+        type: "CardMoved",
+        cardId,
+        fromZone: toZoneId("hand"),
+        toZone: toZoneId("base"),
       };
-      const newState = fold(state, event);
-      return { state: newState, events: [event] };
+      s = fold(s, moved);
+      events.push(moved);
+
+      const q = createRulesQuery(s, catalog);
+      s = collectTriggers(s, [played], programs, catalog, q);
+      const adv = advance(s, q, catalog, programs);
+      return { state: adv.state, events: [...events, ...adv.events] };
     }
 
     case "ActivateAbility": {
-      return advance(state, query, catalog);
+      return advance(state, query, catalog, programs);
     }
 
-    case "ChooseTargets":
+    case "ChooseTargets": {
+      const items = state.chain.items.map((i) =>
+        !i.resolved && i.controller === action.playerId && i.targets.length === 0
+          ? { ...i, targets: action.targets }
+          : i,
+      );
+      const opponent = state.playerIds[0] === action.playerId ? state.playerIds[1] : state.playerIds[0];
+      const next: GameState = {
+        ...state,
+        pendingDecision: null,
+        chain: { ...state.chain, items, priority: opponent, passes: 0 },
+      };
+      return advance(next, createRulesQuery(next, catalog), catalog, programs);
+    }
+
     case "ChooseYesNo":
     case "ChooseOne": {
       const newStack = state.resolutionStack.slice(0, -1);
@@ -322,11 +420,12 @@ export function submit(
         { ...state, resolutionStack: newStack, pendingDecision: null },
         query,
         catalog,
+        programs,
       );
     }
 
     case "AssignDamage": {
-      return advance({ ...state, pendingDecision: null }, query, catalog);
+      return advance({ ...state, pendingDecision: null }, query, catalog, programs);
     }
 
     default:
@@ -407,15 +506,21 @@ export function legalActions(state: GameState, playerId: PlayerId, catalog: Card
           };
         });
 
-      case "ChooseTargets":
-        return [
-          {
-            type: "ChooseTargets" as const,
-            playerId,
-            decisionId: decision.decisionId,
-            targets: [],
-          },
-        ];
+      case "ChooseTargets": {
+        const item = state.chain.items.find((i) => !i.resolved && i.controller === playerId);
+        const selector = item ? chainItemTargetSelector(catalog.programs().get(item.defId)) : null;
+        if (!item || !selector) {
+          return [{ type: "ChooseTargets", playerId, decisionId: decision.decisionId, targets: [] }];
+        }
+        const query2 = createRulesQuery(state, catalog);
+        const candidates = selectCandidates(selector, state, item.sourceId, query2, catalog);
+        return candidates.map((id) => ({
+          type: "ChooseTargets" as const,
+          playerId,
+          decisionId: decision.decisionId,
+          targets: [id],
+        }));
+      }
 
       case "AssignDamage":
         return [
@@ -447,6 +552,56 @@ export function legalActions(state: GameState, playerId: PlayerId, catalog: Card
   }
 
   return actions;
+}
+
+// ---------------------------------------------------------------------------
+// passPriority helper
+// ---------------------------------------------------------------------------
+
+function passPriority(
+  state: GameState,
+  playerId: PlayerId,
+  query: ReturnType<typeof createRulesQuery>,
+  catalog: CardCatalog,
+  programs: ReadonlyMap<string, EffectProgram>,
+): { state: GameState; events: GameEvent[] } {
+  const top = state.resolutionStack[state.resolutionStack.length - 1];
+  // No chain in progress → passing is a no-op (legacy behavior).
+  if (!top || top.type !== "Chain") {
+    return advance(state, query, catalog, programs);
+  }
+
+  const passes = state.chain.passes + 1;
+  const playerCount = state.playerIds.length;
+
+  if (passes < playerCount) {
+    // Flip priority to the other player and re-issue the priority window.
+    const next = state.chain.priority === state.playerIds[0] ? state.playerIds[1] : state.playerIds[0];
+    const reissued: GameState = {
+      ...state,
+      pendingDecision: null,
+      chain: { ...state.chain, passes, priority: next },
+      resolutionStack: [
+        ...state.resolutionStack.slice(0, -1),
+        { type: "Chain" as const, resumeAt: "Execute" as const },
+      ],
+    };
+    const q = createRulesQuery(reissued, catalog);
+    return advance(reissued, q, catalog, programs);
+  }
+
+  // All players have passed → resolve the chain.
+  const resolving: GameState = {
+    ...state,
+    pendingDecision: null,
+    chain: { ...state.chain, passes },
+    resolutionStack: [
+      ...state.resolutionStack.slice(0, -1),
+      { type: "Chain" as const, resumeAt: "Pass" as const },
+    ],
+  };
+  const q = createRulesQuery(resolving, catalog);
+  return advance(resolving, q, catalog, programs);
 }
 
 // ---------------------------------------------------------------------------
