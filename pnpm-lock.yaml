@@ -33,6 +33,28 @@ importers:
         specifier: ^3.0.0
         version: 3.2.6(@types/node@25.9.2)(tsx@4.22.4)(yaml@2.9.0)
 
+  examples/riftbound-cli:
+    dependencies:
+      '@thejokersthief/riftbound-card-catalog':
+        specifier: workspace:*
+        version: link:../../packages/card-catalog
+      '@thejokersthief/riftbound-engine':
+        specifier: workspace:*
+        version: link:../../packages/engine
+      '@thejokersthief/riftbound-protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
+    devDependencies:
+      '@types/node':
+        specifier: ^25.9.2
+        version: 25.9.2
+      tsx:
+        specifier: '*'
+        version: 4.22.4
+      typescript:
+        specifier: '*'
+        version: 5.9.3
+
   examples/riftbound-example:
     dependencies:
       '@thejokersthief/riftbound-card-catalog':

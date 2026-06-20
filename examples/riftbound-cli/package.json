@@ -1,0 +1,20 @@
+{
+  "name": "@thejokersthief/riftbound-cli",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@thejokersthief/riftbound-engine": "workspace:*",
+    "@thejokersthief/riftbound-card-catalog": "workspace:*",
+    "@thejokersthief/riftbound-protocol": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2",
+    "tsx": "*",
+    "typescript": "*"
+  }
+}
