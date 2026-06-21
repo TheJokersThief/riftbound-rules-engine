@@ -252,7 +252,10 @@ describe("full-game simulation", () => {
     let iterations = 0;
     let lastTurnDeployed = -1;
 
-    while (state.status === "playing" && iterations < MAX_ITERATIONS) {
+    // NOTE: createGame starts in status "setup" with a pending ChooseMulligan,
+    // then transitions setup -> playing -> ended. Loop on `!== "ended"` so the
+    // initial mulligan decision is processed (a `=== "playing"` guard never enters).
+    while (state.status !== "ended" && iterations < MAX_ITERATIONS) {
       iterations++;
 
       // Resolve any pending decision (mulligan, targets, priority, focus) first.
@@ -691,7 +694,9 @@ async function main(): Promise<void> {
   const MAX_ITERATIONS = 2000;
   let iterations = 0;
 
-  while (state.status === "playing" && !interrupted && iterations < MAX_ITERATIONS) {
+  // createGame starts in status "setup" (pending ChooseMulligan) → playing → ended.
+  // Loop on `!== "ended"` so the initial mulligan is processed.
+  while (state.status !== "ended" && !interrupted && iterations < MAX_ITERATIONS) {
     iterations++;
 
     // Resolve any pending decision.
